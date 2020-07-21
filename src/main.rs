@@ -24,10 +24,3 @@ fn main() {
     img.save("output/test.png").unwrap();
     bar.finish();
 }
-
-/*
-fn main()
-{
-
-}
-*/
