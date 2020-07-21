@@ -162,7 +162,7 @@ impl Div<f64> for Vec3 {
 }
 
 impl Vec3 {
-    fn elemul(a: Vec3, b: Vec3) -> Vec3 {
+    pub fn elemul(a: Vec3, b: Vec3) -> Vec3 {
         Vec3 {
             x: a.x * b.x,
             y: a.y * b.y,
@@ -170,7 +170,7 @@ impl Vec3 {
         }
     }
 
-    fn cross(a: Vec3, b: Vec3) -> Vec3 {
+    pub fn cross(a: Vec3, b: Vec3) -> Vec3 {
         Vec3 {
             x: a.y * b.z - a.z * b.y,
             y: a.z * b.x - a.x * b.z,
@@ -194,11 +194,11 @@ impl Neg for Vec3 {
 }
 
 impl Vec3 {
-    fn length(self) -> f64 {
+    pub fn length(self) -> f64 {
         ((self.x * self.x + self.y * self.y + self.z * self.z) as f64).sqrt()
     }
 
-    fn unit(self) -> Vec3 {
+    pub fn unit(self) -> Vec3 {
         let a: f64 = ((self.x * self.x + self.y * self.y + self.z * self.z) as f64).sqrt();
         if a == 0.0 {
             panic!("Divide by 0!");
