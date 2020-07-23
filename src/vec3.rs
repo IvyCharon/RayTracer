@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -196,6 +196,10 @@ impl Neg for Vec3 {
 impl Vec3 {
     pub fn length(self) -> f64 {
         ((self.x * self.x + self.y * self.y + self.z * self.z) as f64).sqrt()
+    }
+
+    pub fn length_squared(self) -> f64 {
+        (self.x * self.x + self.y * self.y + self.z * self.z) as f64
     }
 
     pub fn unit(self) -> Vec3 {
