@@ -2,7 +2,7 @@ use crate::Ray;
 use crate::Vec3;
 
 pub trait Object {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> hit_record;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<hit_record>;
 }
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct hit_record {
@@ -10,7 +10,6 @@ pub struct hit_record {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub ifhit: bool,
 }
 
 impl hit_record {
@@ -29,7 +28,6 @@ impl hit_record {
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
             front_face: false,
-            ifhit: false,
         }
     }
 }
@@ -42,7 +40,7 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(v: Vec3, r: f64) -> Self {
-        Sphere {
+        Self {
             center: v,
             radius: r,
         }
@@ -50,7 +48,7 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> hit_record {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<hit_record> {
         let oc = r.beg - self.center;
         let a = r.dir.length_squared();
         let half_b: f64 = oc * r.dir;
@@ -68,13 +66,12 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                return hit_record {
+                return Option::Some(hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                    ifhit: true,
-                };
+                })
             }
 
             temp = (-half_b + root) / a;
@@ -85,15 +82,14 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                return hit_record {
+                return Option::Some(hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                    ifhit: true,
-                };
+                })
             }
         }
-        return hit_record::new();
+        return Option::None;
     }
 }
