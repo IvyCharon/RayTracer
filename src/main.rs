@@ -26,7 +26,6 @@ fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
     }
     match rec {
         Option::Some(rec) => {
-            //(rec.normal + Vec3::ones()) * 0.5
             let target: Vec3 = rec.p + rec.normal + Vec3::random_in_unit_sphere();
             return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
         }
@@ -74,27 +73,22 @@ fn main() {
                 col += ray_color(r, &world, max_depth.clone());
             }
             let pixel = img.get_pixel_mut(i, j);
-            /* *pixel = image::Rgb([
-                (col.x * 255.999/(samples_per_pixel.clone()as f64)) as u8,
-                (col.y * 255.999/(samples_per_pixel.clone()as f64)) as u8,
-                (col.z * 255.999/(samples_per_pixel.clone()as f64)) as u8,
-            ]);*/
             *pixel = image::Rgb([
                 (clamp(
-                    col.x * 255.999 / (samples_per_pixel.clone() as f64),
+                    (col.x / (samples_per_pixel.clone() as f64)).sqrt(),
                     0.0,
-                    255.999,
-                )) as u8,
+                    0.999,
+                ) * 255.999) as u8,
                 (clamp(
-                    col.y * 255.999 / (samples_per_pixel.clone() as f64),
+                    (col.y / (samples_per_pixel.clone() as f64)).sqrt(),
                     0.0,
                     255.999,
-                )) as u8,
+                ) * 255.999) as u8,
                 (clamp(
-                    col.z * 255.999 / (samples_per_pixel.clone() as f64),
+                    (col.z / (samples_per_pixel.clone() as f64)).sqrt(),
                     0.0,
                     255.999,
-                )) as u8,
+                ) * 255.999) as u8,
             ]);
         }
         bar.inc(1);
