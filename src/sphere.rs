@@ -1,18 +1,19 @@
 use crate::Ray;
 use crate::Vec3;
+use crate::Material;
 
 pub trait Object {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<hit_record>;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record>;
 }
-#[derive(Clone, Debug, PartialEq, Copy)]
-pub struct hit_record {
+pub struct Hit_record {
     pub p: Vec3,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub mat: Option<Box<dyn Material> >,
 }
 
-impl hit_record {
+impl Hit_record {
     pub fn set_face_normal(mut self, r: Ray, outward_normal: Vec3) {
         self.front_face = (r.dir * outward_normal) < 0.0;
         if self.front_face {
@@ -28,27 +29,29 @@ impl hit_record {
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
             front_face: false,
+            mat: Option::None,
         }
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub mat: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(v: Vec3, r: f64) -> Self {
+    pub fn new(v: Vec3, r: f64, m: Box<dyn Material>) -> Self {
         Self {
             center: v,
             radius: r,
+            mat: m,
         }
     }
 }
 
 impl Object for Sphere {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<hit_record> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
         let oc = r.beg - self.center;
         let a = r.dir.length_squared();
         let half_b: f64 = oc * r.dir;
@@ -66,11 +69,12 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                return Option::Some(hit_record {
+                return Option::Some(Hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
+                    mat: Option::Some(self.mat),
                 });
             }
 
@@ -82,11 +86,12 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                return Option::Some(hit_record {
+                return Option::Some(Hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
+                    mat: Option::Some(self.mat),
                 });
             }
         }

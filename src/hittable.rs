@@ -1,8 +1,9 @@
-use crate::hit_record;
+use crate::Hit_record;
 use crate::Object;
 use crate::Ray;
 use crate::Sphere;
 use crate::Vec3;
+use crate::Lambertian;
 
 pub struct Hittable_list {
     objects: Vec<Box<dyn Object>>,
@@ -14,6 +15,7 @@ impl Hittable_list {
             objects: vec![Box::new(Sphere {
                 center: Vec3::new(0.0, 0.0, 0.0),
                 radius: 0.0,
+                mat: Box::new(Lambertian::new(Vec3::new(0.0,0.0,0.0))),
             })],
         }
     }
@@ -22,7 +24,7 @@ impl Hittable_list {
         self.objects.push(t);
     }
 
-    pub fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<hit_record> {
+    pub fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
         let mut temp_rec = Option::None;
         let mut closest_so_far = t_max;
         for object in self.objects.iter() {
