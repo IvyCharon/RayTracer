@@ -223,26 +223,26 @@ impl Vec3 {
 }
 
 impl Vec3 {
-    pub fn Random() -> Vec3{
+    pub fn Random() -> Vec3 {
         Vec3::new(
             rand::random::<f64>(),
             rand::random::<f64>(),
-            rand::random::<f64>()
+            rand::random::<f64>(),
         )
     }
 
-    pub fn Random_(mi: f64, ma: f64) -> Vec3{
+    pub fn Random_(mi: f64, ma: f64) -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3::new(
             rng.gen_range(mi, ma),
             rng.gen_range(mi, ma),
-            rng.gen_range(mi, ma)
+            rng.gen_range(mi, ma),
         )
     }
 
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
-            let p = Vec3::Random_(-1.0,1.0);
+            let p = Vec3::Random_(-1.0, 1.0);
             if p.length_squared() < 1.0 {
                 return p;
             }

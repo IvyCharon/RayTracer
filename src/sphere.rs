@@ -71,7 +71,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                })
+                });
             }
 
             temp = (-half_b + root) / a;
@@ -87,7 +87,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                })
+                });
             }
         }
         return Option::None;
