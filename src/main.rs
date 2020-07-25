@@ -14,19 +14,18 @@ use indicatif::ProgressBar;
 use ray::Ray;
 extern crate rand;
 
-const PI: f64 = 3.1415926535897932385;
 const INFINITY: f64 = 1e15;
 
 pub use vec3::Vec3;
 
 fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
-    let rec = world.hit(r, 0.0, INFINITY);
+    let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     match rec {
         Option::Some(rec) => {
-            let target: Vec3 = rec.p + rec.normal + Vec3::random_in_unit_sphere();
+            let target: Vec3 = rec.p + Vec3::random_in_hemisphere(&rec.normal);
             return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
         }
         Option::None => {
