@@ -1,12 +1,12 @@
+mod camera;
 mod ray;
 mod sphere;
 #[allow(clippy::float_cmp)]
 mod vec3;
-mod camera;
+use camera::Camera;
 use sphere::hit_record;
 use sphere::Object;
 use sphere::Sphere;
-use camera::Camera;
 mod hittable;
 use hittable::Hittable_list;
 use image::{ImageBuffer, RgbImage};
@@ -41,11 +41,11 @@ fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
     }
 }
 
-fn clamp(x: f64, min: f64, max: f64) -> f64{
-    if x < min{
+fn clamp(x: f64, min: f64, max: f64) -> f64 {
+    if x < min {
         return min;
     }
-    if x > max{
+    if x > max {
         return max;
     }
     return x;
@@ -80,9 +80,21 @@ fn main() {
                 (col.z * 255.999/(samples_per_pixel.clone()as f64)) as u8,
             ]);*/
             *pixel = image::Rgb([
-                (clamp(col.x * 255.999 / (samples_per_pixel.clone() as f64), 0.0, 255.999)) as u8,
-                (clamp(col.y * 255.999 / (samples_per_pixel.clone() as f64), 0.0, 255.999)) as u8,
-                (clamp(col.z * 255.999 / (samples_per_pixel.clone() as f64), 0.0, 255.999)) as u8,
+                (clamp(
+                    col.x * 255.999 / (samples_per_pixel.clone() as f64),
+                    0.0,
+                    255.999,
+                )) as u8,
+                (clamp(
+                    col.y * 255.999 / (samples_per_pixel.clone() as f64),
+                    0.0,
+                    255.999,
+                )) as u8,
+                (clamp(
+                    col.z * 255.999 / (samples_per_pixel.clone() as f64),
+                    0.0,
+                    255.999,
+                )) as u8,
             ]);
         }
         bar.inc(1);
