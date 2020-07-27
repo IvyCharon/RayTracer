@@ -10,11 +10,11 @@ use sphere::Sphere;
 mod hittable;
 use hittable::Hittable_list;
 mod material;
-use material::Material;
-use material::Lambertian;
-use material::Metal;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
+use material::Lambertian;
+use material::Material;
+use material::Metal;
 use ray::Ray;
 use std::sync::Arc;
 extern crate rand;
@@ -30,11 +30,11 @@ fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
     }
     match rec {
         Option::Some(rec) => {
-            let s = rec.mat.as_ref().unwrap().scatter(r, rec);
+            let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
             if s.jud {
                 return Vec3::elemul(ray_color(s.scattered, world, depth - 1), s.attenustion);
             }
-            return Vec3::new(0.0,0.0,0.0);
+            return Vec3::new(0.0, 0.0, 0.0);
         }
         Option::None => {
             let t = 0.5 * (r.dir.unit().y + 1.0);
@@ -63,16 +63,31 @@ fn main() {
 
     let mut world = Hittable_list::new();
 
-    let mat_ground = Lambertian::new(Vec3::new(0.8,0.8,0.8));
-    let mat_center = Lambertian::new(Vec3::new(0.7,0.3,0.3));
-    let mat_left = Metal::new(Vec3::new(0.8,0.8,0.8));
-    let mat_right = Metal::new(Vec3::new(0.8,0.6,0.2));
+    let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Vec3::new(0.7, 0.3, 0.3));
+    let mat_left = Metal::new(Vec3::new(0.8, 0.8, 0.8));
+    let mat_right = Metal::new(Vec3::new(0.8, 0.6, 0.2));
 
-    world.add(Arc::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Arc::new(mat_ground))));
-    world.add(Arc::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Arc::new(mat_center))));
-    world.add(Arc::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Arc::new(mat_left))));
-    world.add(Arc::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Arc::new(mat_right))));
-    
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Arc::new(mat_ground),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_center),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_left),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_right),
+    )));
 
     let cam = Camera::new();
     let samples_per_pixel = 100;

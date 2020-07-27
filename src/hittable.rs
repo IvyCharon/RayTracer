@@ -1,9 +1,9 @@
 use crate::Hit_record;
+use crate::Lambertian;
 use crate::Object;
 use crate::Ray;
 use crate::Sphere;
 use crate::Vec3;
-use crate::Lambertian;
 use std::sync::Arc;
 
 pub struct Hittable_list {
@@ -16,7 +16,7 @@ impl Hittable_list {
             objects: vec![Arc::new(Sphere {
                 center: Vec3::new(0.0, 0.0, 0.0),
                 radius: 0.0,
-                mat: Arc::new(Lambertian::new(Vec3::new(0.0,0.0,0.0))),
+                mat: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 0.0))),
             })],
         }
     }

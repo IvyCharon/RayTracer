@@ -1,6 +1,6 @@
+use crate::Material;
 use crate::Ray;
 use crate::Vec3;
-use crate::Material;
 use std::sync::Arc;
 
 pub trait Object {
@@ -11,7 +11,7 @@ pub struct Hit_record {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat: Option<Arc<dyn Material> >,
+    pub mat: Option<Arc<dyn Material>>,
 }
 
 impl Hit_record {

@@ -254,12 +254,12 @@ impl Vec3 {
     pub fn random_unit_vec() -> Vec3 {
         let mut rng = rand::thread_rng();
         let a = rng.gen_range(0.0, PI);
-        let z = rng.gen_range(-1.0,1.0);
+        let z = rng.gen_range(-1.0, 1.0);
         let r: f64 = ((1.0 - z.clone() * z.clone()) as f64).sqrt();
         return Vec3::new(r * a.cos(), r * a.sin(), z);
     }
 
-    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3{
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere.clone() * normal.clone() > 0.0 {
             return in_unit_sphere;
