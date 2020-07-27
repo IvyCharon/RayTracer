@@ -67,6 +67,7 @@ fn main() {
     let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
     let mat_center = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
     let mat_left = Dielectric::new(1.5);
+    let mat_left_2 = Dielectric::new(1.5);
     let mat_right = Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.0);
 
     world.add(Arc::new(Sphere::new(
@@ -83,6 +84,11 @@ fn main() {
         Vec3::new(-1.0, 0.0, -1.0),
         0.5,
         Arc::new(mat_left),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        -0.4,
+        Arc::new(mat_left_2),
     )));
     world.add(Arc::new(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),

@@ -1,6 +1,8 @@
 use crate::Hit_record;
 use crate::Ray;
 use crate::Vec3;
+extern crate rand;
+use rand::Rng;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret;
@@ -80,6 +82,18 @@ impl Dielectric {
     pub fn new(x: f64) -> Self {
         Self { ref_idx: x }
     }
+
+    pub fn schlick(cos: f64, ri: f64) -> f64 {
+        let mut r0 = (1.0 - ri.clone()) / (1.0 + ri.clone());
+        r0 *= r0.clone();
+        return r0.clone()
+            + (1.0 - r0.clone())
+                * (1.0 - cos.clone())
+                * (1.0 - cos.clone())
+                * (1.0 - cos.clone())
+                * (1.0 - cos.clone())
+                * (1.0 - cos.clone());
+    }
 }
 
 impl Material for Dielectric {
@@ -98,8 +112,13 @@ impl Material for Dielectric {
                 -r_in.dir.unit() * rec.normal
             }
         };
-        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
-        if eta * sin_theta > 1.0 {
+        let sin_theta = (1.0 - cos_theta.clone() * cos_theta.clone()).sqrt();
+        if eta.clone() * sin_theta > 1.0 {
+            let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
+            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+        }
+        let rp = Dielectric::schlick(cos_theta.clone(), eta.clone());
+        if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
             return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
