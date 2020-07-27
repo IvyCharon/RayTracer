@@ -1,7 +1,7 @@
+use crate::Dielectric;
 use crate::Hit_record;
 use crate::Lambertian;
 use crate::Metal;
-use crate::Dielectric;
 use crate::Object;
 use crate::Ray;
 use crate::Sphere;
@@ -41,31 +41,39 @@ impl Hittable_list {
         return temp_rec;
     }
 
-    pub fn random_scene() -> Self{
+    pub fn random_scene() -> Self {
         let mut world = Hittable_list::new();
 
-        let ground_mat = Lambertian::new(Vec3::new(0.5,0.5,0.5));
-        world.add(Arc::new(Sphere::new(Vec3::new(0.0,-1000.0,0.0), 1000.0, Arc::new(ground_mat))));
+        let ground_mat = Lambertian::new(Vec3::new(0.5, 0.5, 0.5));
+        world.add(Arc::new(Sphere::new(
+            Vec3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Arc::new(ground_mat),
+        )));
 
-        for a in -11 .. 11{
-            for b in -11..11{
+        for a in -11..11 {
+            for b in -11..11 {
                 let choose_mat = rand::random::<f64>();
-                let center = Vec3::new(a as f64 + 0.9 * rand::random::<f64>(), 0.2, b as f64 + 0.9 * rand::random::<f64>());
-                
-                if (center - Vec3::new(4.0,0.2,0.0)).length() > 0.9{
-                    if choose_mat < 0.8{
+                let center = Vec3::new(
+                    a as f64 + 0.9 * rand::random::<f64>(),
+                    0.2,
+                    b as f64 + 0.9 * rand::random::<f64>(),
+                );
+
+                if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                    if choose_mat < 0.8 {
                         //difuse
-                        let albedo = Vec3::elemul(Vec3::Random(),Vec3::Random());
+                        let albedo = Vec3::elemul(Vec3::Random(), Vec3::Random());
                         let sphere_mat = Lambertian::new(albedo);
                         world.add(Arc::new(Sphere::new(center, 0.2, Arc::new(sphere_mat))));
                     } else if choose_mat < 0.95 {
                         //metal
-                        let albedo = Vec3::Random_(0.5,1.0);
+                        let albedo = Vec3::Random_(0.5, 1.0);
                         let mut rng = rand::thread_rng();
-                        let fuzz = rng.gen_range(0.0,0.5);
+                        let fuzz = rng.gen_range(0.0, 0.5);
                         let sphere_mat = Metal::new(albedo, fuzz);
                         world.add(Arc::new(Sphere::new(center, 0.2, Arc::new(sphere_mat))));
-                    }else {
+                    } else {
                         //glass
                         let sphere_mat = Dielectric::new(1.5);
                         world.add(Arc::new(Sphere::new(center, 0.2, Arc::new(sphere_mat))));
@@ -74,13 +82,25 @@ impl Hittable_list {
             }
         }
         let mat1 = Dielectric::new(1.5);
-        world.add(Arc::new(Sphere::new(Vec3::new(0.0,1.0,0.0), 1.0, Arc::new(mat1))));
+        world.add(Arc::new(Sphere::new(
+            Vec3::new(0.0, 1.0, 0.0),
+            1.0,
+            Arc::new(mat1),
+        )));
 
-        let mat2 = Lambertian::new(Vec3::new(0.4,0.2,0.1));
-        world.add(Arc::new(Sphere::new(Vec3::new(-4.0,1.0,0.0), 1.0, Arc::new(mat2))));
+        let mat2 = Lambertian::new(Vec3::new(0.4, 0.2, 0.1));
+        world.add(Arc::new(Sphere::new(
+            Vec3::new(-4.0, 1.0, 0.0),
+            1.0,
+            Arc::new(mat2),
+        )));
 
-        let mat3 = Metal::new(Vec3::new(0.7,0.6,0.5),0.0);
-        world.add(Arc::new(Sphere::new(Vec3::new(4.0,1.0,0.0), 1.0, Arc::new(mat3))));
+        let mat3 = Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0);
+        world.add(Arc::new(Sphere::new(
+            Vec3::new(4.0, 1.0, 0.0),
+            1.0,
+            Arc::new(mat3),
+        )));
 
         return world;
     }

@@ -59,7 +59,6 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-
     const aspect_ratio: f64 = 3.0 / 2.0;
     const image_width: u32 = 1200;
     const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
@@ -70,20 +69,29 @@ fn main() {
 
     let world = Hittable_list::random_scene();
 
-    let lookfrom = Vec3::new(13.0,2.0,3.0);
-    let lookat = Vec3::new(0.0,0.0,0.0);
-    let vup = Vec3::new(0.0,1.0,0.0);
+    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
     let aperture = 0.1;
-    
-    let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus);
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        20.0,
+        aspect_ratio,
+        aperture,
+        dist_to_focus,
+    );
 
     for j in 0..image_height {
         for i in 0..image_width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for s in 0..samples_per_pixel.clone() {
                 let u = (i as f64 + rand::random::<f64>()) / (image_width as f64 - 1.0);
-                let v = (image_height as f64 - j as f64 + rand::random::<f64>()) / (image_height as f64 - 1.0);
+                let v = (image_height as f64 - j as f64 + rand::random::<f64>())
+                    / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
                 col += ray_color(r, &world, max_depth.clone());
             }
