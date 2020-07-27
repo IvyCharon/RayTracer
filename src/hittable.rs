@@ -5,6 +5,7 @@ use crate::Metal;
 use crate::Object;
 use crate::Ray;
 use crate::Sphere;
+use crate::Moving_Sphere;
 use crate::Vec3;
 use std::sync::Arc;
 extern crate rand;
@@ -20,6 +21,13 @@ impl Hittable_list {
             objects: vec![Arc::new(Sphere {
                 center: Vec3::new(0.0, 0.0, 0.0),
                 radius: 0.0,
+                mat: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 0.0))),
+            }),Arc::new(Moving_Sphere {
+                center0: Vec3::new(0.0,0.0,0.0),
+                center1: Vec3::new(0.0,0.0,0.0),
+                radius: 0.0,
+                time0: 0.0,
+                time1: 0.0,
                 mat: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 0.0))),
             })],
         }
@@ -63,9 +71,11 @@ impl Hittable_list {
                 if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                     if choose_mat < 0.8 {
                         //difuse
+                        let mut rng = rand::thread_rng();
                         let albedo = Vec3::elemul(Vec3::Random(), Vec3::Random());
                         let sphere_mat = Lambertian::new(albedo);
-                        world.add(Arc::new(Sphere::new(center, 0.2, Arc::new(sphere_mat))));
+                        let center2 = center + Vec3::new(0.0, rng.gen_range(0.0, 0.5), 0.0);
+                        world.add(Arc::new(Moving_Sphere::new(center, center2,0.0, 1.0, 0.2, Arc::new(sphere_mat))));
                     } else if choose_mat < 0.95 {
                         //metal
                         let albedo = Vec3::Random_(0.5, 1.0);
