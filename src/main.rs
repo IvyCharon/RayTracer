@@ -63,7 +63,7 @@ fn main() {
     let bar = ProgressBar::new(225);
 
     let mut world = Hittable_list::new();
-
+    
     let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
     let mat_center = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
     let mat_left = Dielectric::new(1.5);
@@ -96,7 +96,7 @@ fn main() {
         Arc::new(mat_right),
     )));
 
-    let cam = Camera::new();
+    let cam = Camera::new(Vec3::new(-2.0,2.0,1.0), Vec3::new(0.0,0.0,-1.0), Vec3::new(0.0,1.0,0.0), 20.0,16.0/9.0);
     let samples_per_pixel = 100;
     let max_depth = 50;
 
