@@ -12,6 +12,7 @@ use hittable::Hittable_list;
 mod material;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
+use material::Dielectric;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
@@ -64,9 +65,9 @@ fn main() {
     let mut world = Hittable_list::new();
 
     let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
-    let mat_center = Lambertian::new(Vec3::new(0.7, 0.3, 0.3));
-    let mat_left = Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3);
-    let mat_right = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
+    let mat_center = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
+    let mat_left = Dielectric::new(1.5);
+    let mat_right = Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.0);
 
     world.add(Arc::new(Sphere::new(
         Vec3::new(0.0, -100.5, -1.0),

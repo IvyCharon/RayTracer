@@ -71,3 +71,39 @@ impl Material for Metal {
         return Sca_ret::new(sca.clone(), at, ((sca.clone()).dir * rec.normal) > 0.0);
     }
 }
+
+pub struct Dielectric {
+    pub ref_idx: f64,
+}
+
+impl Dielectric {
+    pub fn new(x: f64) -> Self {
+        Self { ref_idx: x }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
+        let eta: f64 = {
+            if rec.front_face {
+                1.0 / self.ref_idx
+            } else {
+                self.ref_idx
+            }
+        };
+        let cos_theta = {
+            if -r_in.dir.unit() * rec.normal > 1.0 {
+                1.0
+            } else {
+                -r_in.dir.unit() * rec.normal
+            }
+        };
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        if eta * sin_theta > 1.0 {
+            let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
+            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+        }
+        let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
+        return Sca_ret::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true);
+    }
+}

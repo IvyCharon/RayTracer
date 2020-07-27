@@ -270,6 +270,19 @@ impl Vec3 {
     pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
         return v - n * (v * n) * 2.0;
     }
+
+    pub fn refract(uv: Vec3, n: Vec3, et: f64) -> Vec3 {
+        let co: f64 = (-uv) * n;
+        let roperp: Vec3 = (uv + n * co) * et;
+        let roparallel: Vec3 = {
+            if (1.0 - roperp.length_squared()) > 0.0 {
+                n * (-(1.0 - roperp.length_squared()).sqrt())
+            } else {
+                n * (-(roperp.length_squared() - 1.0).sqrt())
+            }
+        };
+        return roperp + roparallel;
+    }
 }
 
 #[cfg(test)]
