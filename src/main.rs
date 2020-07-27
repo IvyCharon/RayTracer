@@ -13,10 +13,10 @@ mod material;
 use material::Material;
 use material::Lambertian;
 use material::Metal;
-use material::Sca_ret;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use ray::Ray;
+use std::sync::Arc;
 extern crate rand;
 
 const INFINITY: f64 = 1e15;
@@ -30,11 +30,9 @@ fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
     }
     match rec {
         Option::Some(rec) => {
-            let target: Vec3 = rec.p + Vec3::random_in_hemisphere(&rec.normal);
-            return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
-            let s = (rec.mat).unwrap().scatter(r, rec);
+            let s = rec.mat.as_ref().unwrap().scatter(r, rec);
             if s.jud {
-                return Vec3::elemul(ray_color(r, world, depth - 1), s.attenustion);
+                return Vec3::elemul(ray_color(s.scattered, world, depth - 1), s.attenustion);
             }
             return Vec3::new(0.0,0.0,0.0);
         }
@@ -70,10 +68,10 @@ fn main() {
     let mat_left = Metal::new(Vec3::new(0.8,0.8,0.8));
     let mat_right = Metal::new(Vec3::new(0.8,0.6,0.2));
 
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Box::new(mat_ground))));
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Box::new(mat_center))));
-    world.add(Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Box::new(mat_left))));
-    world.add(Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Box::new(mat_right))));
+    world.add(Arc::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Arc::new(mat_ground))));
+    world.add(Arc::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Arc::new(mat_center))));
+    world.add(Arc::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Arc::new(mat_left))));
+    world.add(Arc::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Arc::new(mat_right))));
     
 
     let cam = Camera::new();

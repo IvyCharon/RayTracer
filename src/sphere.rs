@@ -1,6 +1,7 @@
 use crate::Ray;
 use crate::Vec3;
 use crate::Material;
+use std::sync::Arc;
 
 pub trait Object {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record>;
@@ -10,7 +11,7 @@ pub struct Hit_record {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat: Option<Box<dyn Material> >,
+    pub mat: Option<Arc<dyn Material> >,
 }
 
 impl Hit_record {
@@ -37,11 +38,11 @@ impl Hit_record {
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub mat: Box<dyn Material>,
+    pub mat: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(v: Vec3, r: f64, m: Box<dyn Material>) -> Self {
+    pub fn new(v: Vec3, r: f64, m: Arc<dyn Material>) -> Self {
         Self {
             center: v,
             radius: r,
@@ -74,7 +75,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                    mat: Option::Some(self.mat),
+                    mat: Option::Some(self.mat.clone()),
                 });
             }
 
@@ -91,7 +92,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp.clone(),
                     front_face: k,
-                    mat: Option::Some(self.mat),
+                    mat: Option::Some(self.mat.clone()),
                 });
             }
         }

@@ -4,23 +4,24 @@ use crate::Ray;
 use crate::Sphere;
 use crate::Vec3;
 use crate::Lambertian;
+use std::sync::Arc;
 
 pub struct Hittable_list {
-    objects: Vec<Box<dyn Object>>,
+    objects: Vec<Arc<dyn Object>>,
 }
 
 impl Hittable_list {
     pub fn new() -> Self {
         Self {
-            objects: vec![Box::new(Sphere {
+            objects: vec![Arc::new(Sphere {
                 center: Vec3::new(0.0, 0.0, 0.0),
                 radius: 0.0,
-                mat: Box::new(Lambertian::new(Vec3::new(0.0,0.0,0.0))),
+                mat: Arc::new(Lambertian::new(Vec3::new(0.0,0.0,0.0))),
             })],
         }
     }
 
-    pub fn add(&mut self, t: Box<dyn Object>) {
+    pub fn add(&mut self, t: Arc<dyn Object>) {
         self.objects.push(t);
     }
 
