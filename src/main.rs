@@ -59,53 +59,31 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let mut img: RgbImage = ImageBuffer::new(400, 225);
-    let bar = ProgressBar::new(225);
 
-    let mut world = Hittable_list::new();
-    
-    let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
-    let mat_center = Lambertian::new(Vec3::new(0.1, 0.2, 0.5));
-    let mat_left = Dielectric::new(1.5);
-    let mat_left_2 = Dielectric::new(1.5);
-    let mat_right = Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.0);
-
-    world.add(Arc::new(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
-        Arc::new(mat_ground),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Vec3::new(0.0, 0.0, -1.0),
-        0.5,
-        Arc::new(mat_center),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        0.5,
-        Arc::new(mat_left),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        -0.4,
-        Arc::new(mat_left_2),
-    )));
-    world.add(Arc::new(Sphere::new(
-        Vec3::new(1.0, 0.0, -1.0),
-        0.5,
-        Arc::new(mat_right),
-    )));
-
-    let cam = Camera::new(Vec3::new(-2.0,2.0,1.0), Vec3::new(0.0,0.0,-1.0), Vec3::new(0.0,1.0,0.0), 20.0,16.0/9.0);
-    let samples_per_pixel = 100;
+    const aspect_ratio: f64 = 3.0 / 2.0;
+    const image_width: u32 = 1200;
+    const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
+    let samples_per_pixel = 500;
     let max_depth = 50;
+    let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
+    let bar = ProgressBar::new(image_height as u64);
 
-    for j in 0..225 {
-        for i in 0..400 {
+    let world = Hittable_list::random_scene();
+
+    let lookfrom = Vec3::new(13.0,2.0,3.0);
+    let lookat = Vec3::new(0.0,0.0,0.0);
+    let vup = Vec3::new(0.0,1.0,0.0);
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
+    
+    let cam = Camera::new(lookfrom, lookat, vup, 20.0, aspect_ratio, aperture, dist_to_focus);
+
+    for j in 0..image_height {
+        for i in 0..image_width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for s in 0..samples_per_pixel.clone() {
-                let u = (i as f64 + rand::random::<f64>()) / (400.0 - 1.0);
-                let v = (225.0 - j as f64 + rand::random::<f64>()) / (225.0 - 1.0);
+                let u = (i as f64 + rand::random::<f64>()) / (image_width as f64 - 1.0);
+                let v = (image_height as f64 - j as f64 + rand::random::<f64>()) / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
                 col += ray_color(r, &world, max_depth.clone());
             }
