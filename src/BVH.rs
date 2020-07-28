@@ -14,7 +14,6 @@ pub struct bvh_node{
     pub right_leaf: Option<Arc<dyn Object>>,
     pub left: Option<Arc<bvh_node>>,
     pub right: Option<Arc<bvh_node>>,
-    pub jud: bool,//true: leaf, false: internal
 }
 
 impl bvh_node{
@@ -25,7 +24,6 @@ impl bvh_node{
             right_leaf: Option::None,
             left: Option::None,
             right: Option::None,
-            jud: true,
         }
     }
     pub fn new(world: Hittable_list, t0: f64, t1: f64) -> Self{
@@ -42,18 +40,16 @@ impl bvh_node{
         let object_span = end - start;
         let mut ret = bvh_node::new_();
         if object_span == 1 as u32 {
-            ret.left_leaf = Option::Some(objects[start as usize]);
-            ret.right_leaf = Option::Some(objects[start as usize]);
-            ret.jud = true;
+            ret.left_leaf = Option::Some(objects[start as usize].clone());
+            ret.right_leaf = Option::Some(objects[start as usize].clone());
         }else if object_span == 2 as u32{
-            if aabb::compare(objects[start as usize], objects[start as usize + 1], axis){
-                ret.left_leaf = Option::Some(objects[start as usize]);
-                ret.right_leaf = Option::Some(objects[start as usize + 1]);
+            if aabb::compare(objects[start as usize].clone(), objects[start as usize + 1].clone(), axis){
+                ret.left_leaf = Option::Some(objects[start as usize].clone());
+                ret.right_leaf = Option::Some(objects[start as usize + 1].clone());
             }else{
-                ret.right_leaf = Option::Some(objects[start as usize]);
-                ret.left_leaf = Option::Some(objects[start as usize + 1]);
+                ret.right_leaf = Option::Some(objects[start as usize].clone());
+                ret.left_leaf = Option::Some(objects[start as usize + 1].clone());
             }
-            ret.jud = true;
         }else{
             //sort(objects.begin() + start, objects.begin() + end, comparator);
             let compare = {
@@ -69,22 +65,25 @@ impl bvh_node{
             let mid = start + object_span / 2;
             ret.left = Option::Some(Arc::new(bvh_node::build(objects, start, mid, t0, t1)));
             ret.right = Option::Some(Arc::new(bvh_node::build(objects, mid, end, t0, t1)));
-            ret.jud = false;
         }
-        if ret.jud{
-            let box_left = ret.left_leaf.unwrap().bounding_box(t0, t1);
-            let box_right = ret.right_leaf.unwrap().bounding_box(t0, t1);
-            ret.box_ = aabb::surrounding_box(box_left.unwrap(), box_right.unwrap());
-        }else{
-            let box_left = ret.left.unwrap().bounding_box(t0, t1);
-            let box_right = ret.right.unwrap().bounding_box(t0, t1);
-            ret.box_ = aabb::surrounding_box(box_left.unwrap(), box_right.unwrap());
+        if let Some(x) = ret.left_leaf{
+            if let Some(y) = ret.right_leaf{
+                let box_left = x.bounding_box(t0, t1);
+                let box_right = y.bounding_box(t0, t1);
+                ret.box_ = aabb::surrounding_box(box_left.unwrap(), box_right.unwrap());
+            }
         }
-        
+        if let Some(x) = ret.left{
+            if let Some(y) = ret.right{
+                 let box_left = x.bounding_box(t0, t1);
+                let box_right = y.bounding_box(t0, t1);
+                ret.box_ = aabb::surrounding_box(box_left.unwrap(), box_right.unwrap());
+            }
+        } 
         return ret;
     }
 
-    pub fn bounding_box(self, t0: f64, t1: f64) -> Option<aabb>{
+    pub fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>{
         return Option::Some(self.box_);
     }
 
@@ -93,8 +92,8 @@ impl bvh_node{
         if !tmp{
             return Option::None;
         }
-        if self.jud{
-            let hit_left = self.left_leaf.unwrap().hit(r, tmin, tmax);
+        if let Some(x) = self.left_leaf {
+            let hit_left = x.hit(r, tmin, tmax);
             let mut hit_right = Option::None;
             match hit_left {
                 None => {
@@ -114,24 +113,32 @@ impl bvh_node{
                 }
             }
         }
-        let hit_left = self.left.unwrap().hit(r, tmin, tmax);
-        let mut hit_right = Option::None;
-        match hit_left {
-            None => {
-                hit_right = self.right.unwrap().hit(r, tmin, tmax);
-                return hit_right;
-            }
-            Some(hit_left) => {
-                hit_right = self.right.unwrap().hit(r, tmin, hit_left.t);
-                match hit_right {
-                    None => {
-                        return Option::Some(hit_left);
+        if let Some(x) = self.left{
+            let hit_left = x.hit(r, tmin, tmax);
+            let mut hit_right = Option::None;
+            match hit_left {
+                None => {
+                    if let Some(y) = self.right{
+                        hit_right = y.hit(r, tmin, tmax);
+                    return hit_right;
                     }
-                    Some(hit_right) => {
-                        return Option::Some(hit_right);
+                }
+                Some(hit_left) => {
+                    if let Some(y) = self.right{
+                        hit_right = y.hit(r, tmin, hit_left.t);
+                        match hit_right {
+                            None => {
+                                return Option::Some(hit_left);
+                            }
+                            Some(hit_right) => {
+                                return Option::Some(hit_right);
+                            }
+                        }
                     }
+                    
                 }
             }
         }
+        return Option::None;
     }
 }
