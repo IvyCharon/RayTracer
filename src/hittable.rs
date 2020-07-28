@@ -6,12 +6,14 @@ use crate::Object;
 use crate::Ray;
 use crate::Sphere;
 use crate::Vec3;
+use crate::aabb;
+use crate::checker_texture;
 use std::sync::Arc;
 extern crate rand;
 use rand::Rng;
 
 pub struct Hittable_list {
-    objects: Vec<Arc<dyn Object>>,
+    pub objects: Vec<Arc<dyn Object>>,
 }
 
 impl Hittable_list {
@@ -44,12 +46,19 @@ impl Hittable_list {
     pub fn random_scene() -> Self {
         let mut world = Hittable_list::new();
 
-        let ground_mat = Lambertian::new(Vec3::new(0.5, 0.5, 0.5));
+        /*let ground_mat = Lambertian::new(Vec3::new(0.5, 0.5, 0.5));
         world.add(Arc::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
             Arc::new(ground_mat),
-        )));
+        )));*/
+
+        let checker = Arc::new(checker_texture::new(Vec3::new(0.2,0.3,0.1), Vec3::new(0.9,0.9,0.9)));
+        world.add(Arc::new(Sphere::new(Vec3::new(0.0,-1000.0,0.0),1000.0,Arc::new(Lambertian::new_(checker)))));
+        /*
+            auto checker = make_shared<checker_texture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
+    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
+        */
 
         for a in -11..11 {
             for b in -11..11 {
@@ -104,4 +113,30 @@ impl Hittable_list {
 
         return world;
     }
+
+    pub fn bounding_box(self, t0: f64, t1: f64) -> Option<aabb>{
+        if self.objects.is_empty(){
+            return Option::None;
+        }
+        let mut first_box = true;
+        let mut output_box = aabb::new(Vec3::new(0.0,0.0,0.0),Vec3::new(0.0,0.0,0.0));
+        for object in self.objects.iter() {
+            let tmp = object.bounding_box(t0, t1);
+            match tmp {
+                None => {
+                    return Option::None;
+                }
+                Some(tmp) => {
+                    if first_box{
+                        output_box = tmp;
+                    }else{
+                        output_box = aabb::surrounding_box(output_box, tmp);
+                    }
+                    first_box = false;
+                }
+            }
+        }
+        return Option::Some(output_box);
+    }
+
 }

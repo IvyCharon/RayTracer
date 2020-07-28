@@ -3,6 +3,11 @@ mod ray;
 mod sphere;
 #[allow(clippy::float_cmp)]
 mod vec3;
+mod AABB_;
+use AABB_::aabb;
+//mod BVH;
+mod texture;
+//use BVH::bvh_node;
 use camera::Camera;
 use sphere::Hit_record;
 use sphere::Object;
@@ -17,6 +22,9 @@ use material::Lambertian;
 use material::Material;
 use material::Metal;
 use ray::Ray;
+use texture::checker_texture;
+use texture::solid_color;
+use texture::Texture;
 use std::sync::Arc;
 extern crate rand;
 

@@ -32,6 +32,16 @@ impl Vec3 {
     pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
+
+    pub fn get(self, i: u32) -> f64{
+        if i == 0 {
+            return self.x;
+        }else if i == 1{
+            return self.y;
+        }else{
+            return self.z;
+        }
+    }
 }
 
 impl Add for Vec3 {
