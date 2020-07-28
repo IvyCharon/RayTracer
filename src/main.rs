@@ -5,9 +5,9 @@ mod sphere;
 mod vec3;
 mod AABB_;
 use AABB_::aabb;
-mod BVH;
+//mod BVH;
 mod texture;
-use BVH::bvh_node;
+//use BVH::bvh_node;
 use camera::Camera;
 use sphere::Hit_record;
 use sphere::Object;
@@ -68,7 +68,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 
 fn main() {
     const aspect_ratio: f64 = 3.0 / 2.0;
-    const image_width: u32 = 1200;
+    const image_width: u32 = 1600;
     const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
     let samples_per_pixel = 500;
     let max_depth = 50;

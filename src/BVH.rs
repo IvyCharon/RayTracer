@@ -29,7 +29,7 @@ impl bvh_node{
         }
     }
     pub fn new(world: Hittable_list, t0: f64, t1: f64) -> Self{
-        bvh_node::build(world.objects, 0, world.objects.len() as u32, t0, t1)
+        bvh_node::build(&world.objects, 0, world.objects.len() as u32, t0, t1)
     }
 
     pub fn random_int(min: u32, max: u32) -> u32{
