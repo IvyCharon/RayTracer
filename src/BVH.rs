@@ -37,7 +37,7 @@ impl bvh_node{
         return rng.gen_range(min, max + 1) as u32;
     }
 
-    pub fn build(mut objects: Vec<Arc<dyn Object>>, start: u32, end: u32, t0: f64, t1: f64) -> Self{
+    pub fn build(mut objects: &Vec<Arc<dyn Object>>, start: u32, end: u32, t0: f64, t1: f64) -> Self{
         let axis = bvh_node::random_int(0, 2);
         let object_span = end - start;
         let mut ret = bvh_node::new_();
@@ -67,8 +67,8 @@ impl bvh_node{
             };
             
             let mid = start + object_span / 2;
-            ret.left = Option::Some(Arc::new(bvh_node::build(objects.clone(), start, mid, t0, t1)));
-            ret.right = Option::Some(Arc::new(bvh_node::build(objects.clone(), mid, end, t0, t1)));
+            ret.left = Option::Some(Arc::new(bvh_node::build(objects, start, mid, t0, t1)));
+            ret.right = Option::Some(Arc::new(bvh_node::build(objects, mid, end, t0, t1)));
             ret.jud = false;
         }
         if ret.jud{
