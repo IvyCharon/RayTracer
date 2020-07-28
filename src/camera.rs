@@ -1,7 +1,5 @@
 use crate::Ray;
 use crate::Vec3;
-extern crate rand;
-use rand::Rng;
 const PI: f64 = 3.1415926535897932385;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Camera {
@@ -13,8 +11,6 @@ pub struct Camera {
     pub v: Vec3,
     pub w: Vec3,
     pub lens_radius: f64,
-    pub time0: f64,
-    pub time1: f64,
 }
 
 impl Camera {
@@ -26,8 +22,6 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
-        t0: f64,
-        t1: f64
     ) -> Self {
         let theta = vfov * PI / 180.0;
         let h = (theta / 2.0).tan();
@@ -50,19 +44,15 @@ impl Camera {
             u: uu,
             v: vv,
             lens_radius: aperture / 2.0,
-            time0: t0,
-            time1: t1,
         }
     }
 
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
         let rd = Vec3::random_in_unit_disk() * self.lens_radius;
         let offset = self.u * rd.x + self.v * rd.y;
-        let mut rng = rand::thread_rng();
         Ray::new(
             self.origin + offset,
             self.lower_left_corner + self.horizontal * u + self.vertical * v - self.origin - offset,
-            rng.gen_range(self.time0, self.time1),
         )
     }
 }

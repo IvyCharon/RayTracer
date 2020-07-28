@@ -38,7 +38,7 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
         let sca_dir = rec.normal + Vec3::random_unit_vec();
-        return Sca_ret::new(Ray::new(rec.p, sca_dir.clone(), r_in.tm), self.albedo, true);
+        return Sca_ret::new(Ray::new(rec.p, sca_dir.clone()), self.albedo, true);
     }
 }
 
@@ -68,7 +68,6 @@ impl Material for Metal {
         let sca = Ray::new(
             rec.p,
             reflected.clone() + Vec3::random_in_unit_sphere() * self.fuzz,
-            0.0
         );
         let at = self.albedo;
         return Sca_ret::new(sca.clone(), at, ((sca.clone()).dir * rec.normal) > 0.0);
@@ -116,14 +115,14 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta.clone() * cos_theta.clone()).sqrt();
         if eta.clone() * sin_theta > 1.0 {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return Sca_ret::new(Ray::new(rec.p, refl, 0.0), Vec3::new(1.0, 1.0, 1.0), true);
+            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
         let rp = Dielectric::schlick(cos_theta.clone(), eta.clone());
         if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return Sca_ret::new(Ray::new(rec.p, refl, 0.0), Vec3::new(1.0, 1.0, 1.0), true);
+            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
-        return Sca_ret::new(Ray::new(rec.p, refr, 0.0), Vec3::new(1.0, 1.0, 1.0), true);
+        return Sca_ret::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true);
     }
 }

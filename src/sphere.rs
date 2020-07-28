@@ -100,6 +100,7 @@ impl Object for Sphere {
     }
 }
 
+/*
 pub struct Moving_Sphere{
     pub center0: Vec3,
     pub center1: Vec3,
@@ -174,3 +175,4 @@ impl Object for Moving_Sphere{
         return Option::None;
     }
 }
+*/

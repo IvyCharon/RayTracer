@@ -7,7 +7,6 @@ use camera::Camera;
 use sphere::Hit_record;
 use sphere::Object;
 use sphere::Sphere;
-use sphere::Moving_Sphere;
 mod hittable;
 use hittable::Hittable_list;
 mod material;
@@ -84,8 +83,6 @@ fn main() {
         aspect_ratio,
         aperture,
         dist_to_focus,
-        0.0,
-        1.0
     );
 
     for j in 0..image_height {
