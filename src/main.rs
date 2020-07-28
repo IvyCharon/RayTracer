@@ -1,17 +1,17 @@
+mod AABB_;
 mod camera;
 mod ray;
 mod sphere;
 #[allow(clippy::float_cmp)]
 mod vec3;
-mod AABB_;
 use AABB_::aabb;
 mod BVH;
 mod texture;
-use BVH::bvh_node;
 use camera::Camera;
 use sphere::Hit_record;
 use sphere::Object;
 use sphere::Sphere;
+use BVH::bvh_node;
 mod hittable;
 use hittable::Hittable_list;
 mod material;
@@ -22,17 +22,17 @@ use material::Lambertian;
 use material::Material;
 use material::Metal;
 use ray::Ray;
+use std::sync::Arc;
 use texture::checker_texture;
 use texture::solid_color;
 use texture::Texture;
-use std::sync::Arc;
 extern crate rand;
 
 const INFINITY: f64 = 1e15;
 
 pub use vec3::Vec3;
 
-fn ray_color(r: Ray, world: &Hittable_list, depth: i32) -> Vec3 {
+fn ray_color(r: Ray, world: Arc<bvh_node>, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
@@ -101,7 +101,7 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, &world, max_depth.clone());
+                col += ray_color(r, world.clone(), max_depth.clone());
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([

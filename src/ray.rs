@@ -8,7 +8,7 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(p: Vec3, d: Vec3) -> Self {
-        Self { beg: p, dir: d}
+        Self { beg: p, dir: d }
     }
 
     pub fn at(self, t: f64) -> Vec3 {

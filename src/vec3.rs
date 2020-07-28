@@ -33,12 +33,12 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn get(self, i: u32) -> f64{
+    pub fn get(self, i: u32) -> f64 {
         if i == 0 {
             return self.x;
-        }else if i == 1{
+        } else if i == 1 {
             return self.y;
-        }else{
+        } else {
             return self.z;
         }
     }

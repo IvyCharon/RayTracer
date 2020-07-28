@@ -1,9 +1,9 @@
-use crate::Hit_record;
-use crate::Ray;
-use crate::Vec3;
 use crate::checker_texture;
 use crate::solid_color;
+use crate::Hit_record;
+use crate::Ray;
 use crate::Texture;
+use crate::Vec3;
 use std::sync::Arc;
 extern crate rand;
 use rand::Rng;
@@ -34,7 +34,9 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(v: Vec3) -> Self {
-        Lambertian { albedo: Arc::new(solid_color::new(v)) }
+        Lambertian {
+            albedo: Arc::new(solid_color::new(v)),
+        }
     }
 
     pub fn new_(v: Arc<dyn Texture>) -> Self {
@@ -45,7 +47,11 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
         let sca_dir = rec.normal + Vec3::random_unit_vec();
-        return Sca_ret::new(Ray::new(rec.p, sca_dir.clone()), self.albedo.value(rec.u, rec.v, rec.p), true);
+        return Sca_ret::new(
+            Ray::new(rec.p, sca_dir.clone()),
+            self.albedo.value(rec.u, rec.v, rec.p),
+            true,
+        );
     }
 }
 

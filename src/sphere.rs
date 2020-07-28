@@ -1,7 +1,7 @@
+use crate::aabb;
 use crate::Material;
 use crate::Ray;
 use crate::Vec3;
-use crate::aabb;
 use std::sync::Arc;
 
 const PI: f64 = 3.1415926535897932385;
@@ -20,17 +20,14 @@ pub struct Hit_record {
     pub v: f64,
 }
 
-pub struct uv{
+pub struct uv {
     u: f64,
     v: f64,
 }
 
-impl uv{
-    pub fn new(a: f64, b: f64) -> Self{
-        Self{
-            u: a,
-            v: b,
-        }
+impl uv {
+    pub fn new(a: f64, b: f64) -> Self {
+        Self { u: a, v: b }
     }
 }
 
@@ -56,7 +53,7 @@ impl Hit_record {
         }
     }
 
-    pub fn get_sphere_uv(p: Vec3) -> uv{
+    pub fn get_sphere_uv(p: Vec3) -> uv {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
         let u = 1.0 - (phi + PI) / (2.0 * PI);
@@ -100,7 +97,8 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                let uv_ = Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                let uv_ =
+                    Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
                 return Option::Some(Hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
@@ -120,7 +118,8 @@ impl Object for Sphere {
                 if !k {
                     tmpp = -outward_normal;
                 }
-                let uv_ = Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                let uv_ =
+                    Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
                 return Option::Some(Hit_record {
                     p: r.at(temp.clone()),
                     normal: tmpp,
@@ -135,10 +134,10 @@ impl Object for Sphere {
         return Option::None;
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>{
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
         return Option::Some(aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
-            self.center + Vec3::new(self.radius, self.radius, self.radius)
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
         ));
     }
 }
