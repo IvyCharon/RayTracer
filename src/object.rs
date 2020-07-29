@@ -20,17 +20,6 @@ pub struct Hit_record {
     pub v: f64,
 }
 
-pub struct uv {
-    u: f64,
-    v: f64,
-}
-
-impl uv {
-    pub fn new(a: f64, b: f64) -> Self {
-        Self { u: a, v: b }
-    }
-}
-
 impl Hit_record {
     pub fn set_face_normal(mut self, r: Ray, outward_normal: Vec3) {
         self.front_face = (r.dir * outward_normal) < 0.0;
@@ -59,6 +48,17 @@ impl Hit_record {
         let u = 1.0 - (phi + PI) / (2.0 * PI);
         let v = (theta + PI / 2.0) / PI;
         return uv::new(u, v);
+    }
+}
+
+pub struct uv {
+    u: f64,
+    v: f64,
+}
+
+impl uv {
+    pub fn new(a: f64, b: f64) -> Self {
+        Self { u: a, v: b }
     }
 }
 
@@ -138,6 +138,70 @@ impl Object for Sphere {
         return Option::Some(aabb::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
+        ));
+    }
+}
+
+pub struct xy_rect{
+    mp: Arc<dyn Material>,
+    x0: f64,
+    x1: f64,
+    y0: f64,
+    y1: f64,
+    k: f64,
+}
+
+impl xy_rect{
+    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self{
+        Self{
+            mp: e,
+            x0: a,
+            x1: b,
+            y0: c,
+            y1: d,
+            k: f,
+        }
+    }
+
+    pub fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record>{
+        let t = (self.k - r.beg.z) / r.dir.z;
+        if t < t0 || t > t1{
+            return Option::None;
+        }
+        let x = r.beg.x + r.dir.x * t;
+        let y = r.beg.y + r.dir.y * t;
+        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1{
+            return Option::None;
+        }
+        let outward_normal = Vec3::new(0.0,0.0,1.0);
+        Option::Some(Hit_record{
+            p: r.at(t),
+            normal: {
+                if (r.dir * outward_normal) < 0.0{
+                    outward_normal
+                }else{
+                    -outward_normal
+                }
+            },
+            t: t,
+            front_face: (r.dir * outward_normal) < 0.0,
+            mat: Option::Some(self.mp.clone()),
+            u: (x - self.x0) / (self.x1 - self.x0),
+            v: (y - self.y0) / (self.y1 - self.y0),
+        })
+    }
+}
+
+impl Object for xy_rect{
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record>{
+        return Option::None;
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>{
+        return Option::Some(
+            aabb::new(
+                Vec3::new(self.x0,self.y0, self.k-0.0001), 
+                Vec3::new(self.x1, self.y1, self.k+0.0001)
         ));
     }
 }

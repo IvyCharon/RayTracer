@@ -5,11 +5,15 @@ use crate::Ray;
 use crate::Texture;
 use crate::Vec3;
 use std::sync::Arc;
+use crate::Object;
 extern crate rand;
 use rand::Rng;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret;
+    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3{
+        return Vec3::zero();
+    }
 }
 
 pub struct Sca_ret {
@@ -137,5 +141,31 @@ impl Material for Dielectric {
         }
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
         return Sca_ret::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true);
+    }
+}
+
+pub struct diffuse_light{
+    pub emit: Arc<dyn Texture>,
+}
+
+impl diffuse_light{
+    pub fn new(m: Arc<dyn Texture>) -> Self{
+        Self{
+            emit: m,
+        }
+    }
+}
+
+impl Material for diffuse_light{
+    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret{
+        Sca_ret{
+            scattered: Ray::new(Vec3::zero(), Vec3::zero()),
+            attenustion: Vec3::zero(),
+            jud: false,
+        }
+    }
+
+    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3{
+        return self.emit.value(u, v, p);
     }
 }

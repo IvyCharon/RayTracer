@@ -1,19 +1,19 @@
 mod AABB_;
 mod camera;
 mod ray;
-mod sphere;
+mod object;
 #[allow(clippy::float_cmp)]
 mod vec3;
 use AABB_::aabb;
 mod BVH;
 mod texture;
 use camera::Camera;
-use sphere::Hit_record;
-use sphere::Object;
-use sphere::Sphere;
+use object::Hit_record;
+use object::Object;
+use object::Sphere;
 use BVH::bvh_node;
-mod hittable;
-use hittable::Hittable_list;
+mod hittable_list;
+use hittable_list::Hittable_list;
 mod material;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -21,6 +21,8 @@ use material::Dielectric;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
+use material::diffuse_light;
+use object::xy_rect;
 use ray::Ray;
 use std::sync::Arc;
 use texture::checker_texture;
@@ -32,7 +34,7 @@ const INFINITY: f64 = 1e15;
 
 pub use vec3::Vec3;
 
-fn ray_color(r: Ray, world: Arc<bvh_node>, depth: i32) -> Vec3 {
+fn ray_color(r: Ray, back_ground: Vec3, world: Arc<bvh_node>, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
@@ -40,18 +42,14 @@ fn ray_color(r: Ray, world: Arc<bvh_node>, depth: i32) -> Vec3 {
     match rec {
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
+            let emitted = rec.mat.unwrap().emitted(rec.u, rec.v, rec.p);
             if s.jud {
-                return Vec3::elemul(ray_color(s.scattered, world, depth - 1), s.attenustion);
+                return emitted + Vec3::elemul(ray_color(s.scattered, back_ground, world, depth - 1), s.attenustion);
             }
-            return Vec3::new(0.0, 0.0, 0.0);
+            return emitted;
         }
         Option::None => {
-            let t = 0.5 * (r.dir.unit().y + 1.0);
-            Vec3 {
-                x: 1.0 - t + t * 0.5,
-                y: 1.0 - t + t * 0.7,
-                z: 1.0,
-            }
+            return back_ground;
         }
     }
 }
@@ -68,9 +66,9 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 
 fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
-    const image_width: u32 = 400;
+    const image_width: u32 = 1600;
     const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 500;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
     let bar = ProgressBar::new(image_height as u64);
@@ -80,8 +78,9 @@ fn main() {
     let lookfrom = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
+    let dist_to_focus = 20.0;
     let aperture = 0.1;
+    let background = Vec3::new(0.0, 0.0, 0.00);
 
     let cam = Camera::new(
         lookfrom,
@@ -101,7 +100,7 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, world.clone(), max_depth.clone());
+                col += ray_color(r, background, world.clone(), max_depth.clone());
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([
