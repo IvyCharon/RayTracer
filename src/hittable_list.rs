@@ -1,33 +1,33 @@
-use crate::aabb;
-use crate::bvh_node;
-use crate::checker_texture;
-use crate::diffuse_light;
-use crate::solid_color;
-use crate::xy_rect;
-use crate::yz_rect;
-use crate::xz_rect;
-use crate::box_;
+use crate::Box;
+use crate::BvhNode;
+use crate::CheckerTexture;
 use crate::Dielectric;
-use crate::Hit_record;
+use crate::DiffuseLight;
+use crate::HitRecord;
 use crate::Lambertian;
 use crate::Metal;
 use crate::Object;
 use crate::Ray;
+use crate::SolidColor;
 use crate::Sphere;
 use crate::Vec3;
+use crate::XYRect;
+use crate::XZRect;
+use crate::YZRrect;
+use crate::AABB;
 use std::sync::Arc;
 extern crate rand;
 use rand::Rng;
 
 const INFINITY: f64 = 1e15;
 
-pub struct Hittable_list {
+pub struct HittableList {
     pub objects: Vec<Arc<dyn Object>>,
     pub num: usize,
 }
 
-impl Object for Hittable_list{
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
+impl Object for HittableList {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut temp_rec = Option::None;
         let mut closest_so_far = t_max;
         for object in self.objects.iter() {
@@ -36,17 +36,17 @@ impl Object for Hittable_list{
                 temp_rec = Option::Some(rec);
             }
         }
-        return temp_rec;
+        temp_rec
     }
-    
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
+
+    fn bounding_box(&self) -> Option<AABB> {
         if self.objects.is_empty() {
             return Option::None;
         }
         let mut first_box = true;
-        let mut output_box = aabb::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
+        let mut output_box = AABB::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
         for object in self.objects.iter() {
-            let tmp = object.bounding_box(t0, t1);
+            let tmp = object.bounding_box();
             match tmp {
                 None => {
                     return Option::None;
@@ -55,17 +55,17 @@ impl Object for Hittable_list{
                     if first_box {
                         output_box = tmp;
                     } else {
-                        output_box = aabb::surrounding_box(output_box, tmp);
+                        output_box = AABB::surrounding_box(output_box, tmp);
                     }
                     first_box = false;
                 }
             }
         }
-        return Option::Some(output_box);
+        Option::Some(output_box)
     }
 }
 
-impl Hittable_list {
+impl HittableList {
     pub fn new() -> Self {
         Self {
             objects: vec![Arc::new(Sphere {
@@ -82,10 +82,10 @@ impl Hittable_list {
         self.num += 1;
     }
 
-    pub fn random_scene() -> Arc<bvh_node> {
-        let mut world = Hittable_list::new();
+    pub fn random_scene() -> Arc<BvhNode> {
+        let mut world = HittableList::new();
 
-        let checker = Arc::new(checker_texture::new(
+        let checker = Arc::new(CheckerTexture::new(
             Vec3::new(0.2, 0.3, 0.1),
             Vec3::new(0.9, 0.9, 0.9),
         ));
@@ -106,18 +106,18 @@ impl Hittable_list {
 
                 if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                     if choose_mat < 0.6 {
-                        let dl = Arc::new(diffuse_light::new(Arc::new(solid_color::new(
-                            Vec3::elemul(Vec3::Random(), Vec3::Random()),
+                        let dl = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new(
+                            Vec3::elemul(Vec3::random1(), Vec3::random1()),
                         ))));
                         world.add(Arc::new(Sphere::new(center, 0.2, dl)));
                     } else if choose_mat < 0.7 {
                         //difuse
-                        let albedo = Vec3::elemul(Vec3::Random(), Vec3::Random());
+                        let albedo = Vec3::elemul(Vec3::random1(), Vec3::random1());
                         let sphere_mat = Lambertian::new(albedo);
                         world.add(Arc::new(Sphere::new(center, 0.2, Arc::new(sphere_mat))));
                     } else if choose_mat < 0.85 {
                         //metal
-                        let albedo = Vec3::Random_(0.5, 1.0);
+                        let albedo = Vec3::random2(0.5, 1.0);
                         let mut rng = rand::thread_rng();
                         let fuzz = rng.gen_range(0.0, 0.5);
                         let sphere_mat = Metal::new(albedo, fuzz);
@@ -130,6 +130,7 @@ impl Hittable_list {
                 }
             }
         }
+
         let mat1 = Dielectric::new(1.5);
         world.add(Arc::new(Sphere::new(
             Vec3::new(0.0, 1.0, 0.0),
@@ -150,12 +151,13 @@ impl Hittable_list {
             1.0,
             Arc::new(mat3),
         )));
-        Arc::new(bvh_node::new(world, 0.001, INFINITY))
+        Arc::new(BvhNode::new(world, 0.001, INFINITY))
     }
 
-    pub fn test_xy() -> Arc<dyn Object> {
-        let mut world = Hittable_list::new();
-        /*let checker = Arc::new(checker_texture::new(
+    pub fn night() -> Arc<dyn Object> {
+        let mut world = HittableList::new();
+
+        let checker = Arc::new(CheckerTexture::new(
             Vec3::new(0.2, 0.3, 0.1),
             Vec3::new(0.9, 0.9, 0.9),
         ));
@@ -163,34 +165,116 @@ impl Hittable_list {
             Vec3::new(0.0, -1000.0, 0.0),
             1000.0,
             Arc::new(Lambertian::new_(checker)),
-        )));*/
+        )));
+        for a in -13..13 {
+            for b in -13..13 {
+                let choose_mat = rand::random::<f64>();
+                let mut rng = rand::thread_rng();
+                let r = rng.gen_range(0.09, 0.29);
+                let center = Vec3::new(
+                    a as f64 + 0.9 * rand::random::<f64>(),
+                    r,
+                    b as f64 + 0.9 * rand::random::<f64>(),
+                );
 
-        //let tmp = Arc::new(Lambertian::new(Vec3::new(0.5,0.5,0.5)));
-        //world.add(Arc::new(Sphere::new(Vec3::new(0.0,2.0,0.0),2.0,tmp)));
+                if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                    if choose_mat < 0.6 {
+                        let dl = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new(
+                            Vec3::elemul(Vec3::random1(), Vec3::random1()),
+                        ))));
+                        world.add(Arc::new(Sphere::new(center, r * 0.99999, dl)));
+                        let ke = Arc::new(Dielectric::new(4.0));
+                        world.add(Arc::new(Sphere::new(center, r, ke)));
+                    } else if choose_mat < 0.65 {
+                        //difuse
+                        let albedo = Vec3::elemul(Vec3::random1(), Vec3::random1());
+                        let sphere_mat = Lambertian::new(albedo);
+                        world.add(Arc::new(Sphere::new(center, r, Arc::new(sphere_mat))));
+                    } else if choose_mat < 0.8 {
+                        //metal
+                        let albedo = Vec3::random2(0.5, 1.0);
+                        let mut rng = rand::thread_rng();
+                        let fuzz = rng.gen_range(0.0, 0.5);
+                        let sphere_mat = Metal::new(albedo, fuzz);
+                        world.add(Arc::new(Sphere::new(center, r, Arc::new(sphere_mat))));
+                    } else {
+                        //glass
+                        let sphere_mat = Dielectric::new(1.5);
+                        world.add(Arc::new(Sphere::new(center, r, Arc::new(sphere_mat))));
+                    }
+                }
+            }
+        }
 
-        let ttmp = Arc::new(Lambertian::new(Vec3::new(0.2, 0.4, 0.3)));
-        world.add(Arc::new(xy_rect::new(3.0, 5.0, 1.0, 3.0, -2.0, ttmp)));
+        let mat = DiffuseLight::new(Arc::new(CheckerTexture::new(
+            Vec3::new(1.0, 1.0, 1.0),
+            Vec3::new(
+                (12.0 * 16.0 + 7.8) / 255.0,
+                (9.0 * 16.0 + 4.0) / 255.0,
+                (160.0 + 4.0) / 255.0,
+            ),
+        )));
+        world.add(Arc::new(Sphere::new(
+            Vec3::new(3.0, 0.45, 0.0),
+            0.45,
+            Arc::new(mat),
+        )));
 
-        Arc::new(bvh_node::new(world, 0.001, INFINITY))
-        //Arc::new(world)
+        Arc::new(BvhNode::new(world, 0.001, INFINITY))
     }
 
     pub fn cornell_box() -> Arc<dyn Object> {
-        let red = Arc::new(Lambertian::new(Vec3::new(0.65,0.05,0.05)));
-        let white = Arc::new(Lambertian::new(Vec3::new(0.73,0.73,0.73)));
-        let green = Arc::new(Lambertian::new(Vec3::new(0.12,0.45,0.15)));
-        let light = Arc::new(diffuse_light::new_(Vec3::new(15.0,15.0,15.0)));
+        let red = Arc::new(Lambertian::new(Vec3::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::new(Vec3::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::new(Vec3::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::new_(Vec3::new(15.0, 15.0, 15.0)));
 
-        let mut world = Hittable_list::new();
-        world.add(Arc::new(yz_rect::new(0.0,555.0,0.0,555.0,555.0,green)));
-        world.add(Arc::new(yz_rect::new(0.0,555.0,0.0,555.0,0.0,red)));
-        world.add(Arc::new(xz_rect::new(213.0,343.0,227.0,332.0,554.0,light)));
-        world.add(Arc::new(xz_rect::new(0.0,555.0,0.0,555.0,0.0,white.clone())));
-        world.add(Arc::new(xz_rect::new(0.0,555.0,0.0,555.0,555.0,white.clone())));
-        world.add(Arc::new(xy_rect::new(0.0,555.0,0.0,555.0,555.0,white.clone())));
-        
-        world.add(Arc::new(box_::new(Vec3::new(130.0,0.0,65.0), Vec3::new(295.0,165.0,230.0), white.clone())));
-        world.add(Arc::new(box_::new(Vec3::new(265.0,0.0,295.0), Vec3::new(430.0,330.0,460.0), white.clone())));
+        let mut world = HittableList::new();
+        world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+        world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+        world.add(Arc::new(XZRect::new(
+            213.0,
+            343.0,
+            227.0,
+            332.0,
+            554.0,
+            light.clone(),
+        )));
+        world.add(Arc::new(XZRect::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            0.0,
+            white.clone(),
+        )));
+        world.add(Arc::new(XZRect::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+        world.add(Arc::new(XYRect::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+
+        world.add(Arc::new(Box::new(
+            Vec3::new(130.0, 0.0, 65.0),
+            Vec3::new(295.0, 165.0, 230.0),
+            light.clone(),
+        )));
+        world.add(Arc::new(Box::new(
+            Vec3::new(265.0, 0.0, 295.0),
+            Vec3::new(430.0, 330.0, 460.0),
+            white.clone(),
+        )));
 
         Arc::new(world)
     }

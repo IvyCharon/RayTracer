@@ -2,8 +2,6 @@ use std::ops::{Add, AddAssign};
 
 //use crate::rand;
 
-use rand::prelude::*;
-
 extern crate rand;
 use rand::Rng;
 
@@ -21,7 +19,7 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    pub fn ones() -> Self {
+    pub fn _ones() -> Self {
         Self::new(1.0, 1.0, 1.0)
     }
 
@@ -29,7 +27,7 @@ impl Vec3 {
         Self::new(0.0, 0.0, 0.0)
     }
 
-    pub fn squared_length(&self) -> f64 {
+    pub fn _squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
@@ -235,7 +233,7 @@ impl Vec3 {
 }
 
 impl Vec3 {
-    pub fn Random() -> Vec3 {
+    pub fn random1() -> Vec3 {
         Vec3::new(
             rand::random::<f64>(),
             rand::random::<f64>(),
@@ -243,7 +241,7 @@ impl Vec3 {
         )
     }
 
-    pub fn Random_(mi: f64, ma: f64) -> Vec3 {
+    pub fn random2(mi: f64, ma: f64) -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3::new(
             rng.gen_range(mi, ma),
@@ -254,7 +252,7 @@ impl Vec3 {
 
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
-            let p = Vec3::Random_(-1.0, 1.0);
+            let p = Vec3::random2(-1.0, 1.0);
             if p.length_squared() < 1.0 {
                 return p;
             }
@@ -266,15 +264,15 @@ impl Vec3 {
         let a = rng.gen_range(0.0, PI);
         let z = rng.gen_range(-1.0, 1.0);
         let r: f64 = ((1.0 - z.clone() * z.clone()) as f64).sqrt();
-        return Vec3::new(r * a.cos(), r * a.sin(), z);
+        Vec3::new(r * a.cos(), r * a.sin(), z)
     }
 
-    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
+    pub fn _random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere.clone() * normal.clone() > 0.0 {
             return in_unit_sphere;
         }
-        return -in_unit_sphere;
+        -in_unit_sphere
     }
 
     pub fn random_in_unit_disk() -> Vec3 {
@@ -288,7 +286,7 @@ impl Vec3 {
     }
 
     pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-        return v - n * (v * n) * 2.0;
+        v - n * (v * n) * 2.0
     }
 
     pub fn refract(uv: Vec3, n: Vec3, et: f64) -> Vec3 {
@@ -301,7 +299,7 @@ impl Vec3 {
                 n * (-(roperp.length_squared() - 1.0).sqrt())
             }
         };
-        return roperp + roparallel;
+        roperp + roparallel
     }
 }
 
@@ -373,7 +371,7 @@ mod tests {
 
     #[test]
     fn test_mul() {
-        assert_eq!(Vec3::new(1.0, 0.0, -1.0) * Vec3::ones(), 0.0);
+        assert_eq!(Vec3::new(1.0, 0.0, -1.0) * Vec3::_ones(), 0.0);
     }
 
     #[test]
@@ -415,7 +413,7 @@ mod tests {
 
     #[test]
     fn test_squared_length() {
-        assert_eq!(Vec3::new(1.0, 2.0, 3.0).squared_length(), 14.0 as f64);
+        assert_eq!(Vec3::new(1.0, 2.0, 3.0)._squared_length(), 14.0 as f64);
     }
 
     #[test]

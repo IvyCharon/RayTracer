@@ -1,17 +1,17 @@
-use crate::aabb;
+use crate::HittableList;
 use crate::Material;
 use crate::Ray;
 use crate::Vec3;
-use crate::Hittable_list;
+use crate::AABB;
 use std::sync::Arc;
 
 const PI: f64 = 3.1415926535897932385;
 
 pub trait Object {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record>;
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self) -> Option<AABB>;
 }
-pub struct Hit_record {
+pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,
     pub t: f64,
@@ -21,43 +21,22 @@ pub struct Hit_record {
     pub v: f64,
 }
 
-impl Hit_record {
-    pub fn set_face_normal(mut self, r: Ray, outward_normal: Vec3) {
-        self.front_face = (r.dir * outward_normal) < 0.0;
-        if self.front_face {
-            self.normal = outward_normal;
-        } else {
-            self.normal = -outward_normal;
-        }
-    }
-
-    pub fn new() -> Self {
-        Self {
-            p: Vec3::new(0.0, 0.0, 0.0),
-            normal: Vec3::new(0.0, 0.0, 0.0),
-            t: 0.0,
-            front_face: false,
-            mat: Option::None,
-            u: 0.0,
-            v: 0.0,
-        }
-    }
-
-    pub fn get_sphere_uv(p: Vec3) -> uv {
+impl HitRecord {
+    pub fn get_sphere_uv(p: Vec3) -> UV {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
         let u = 1.0 - (phi + PI) / (2.0 * PI);
         let v = (theta + PI / 2.0) / PI;
-        return uv::new(u, v);
+        UV::new(u, v)
     }
 }
 
-pub struct uv {
+pub struct UV {
     u: f64,
     v: f64,
 }
 
-impl uv {
+impl UV {
     pub fn new(a: f64, b: f64) -> Self {
         Self { u: a, v: b }
     }
@@ -80,7 +59,7 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.beg - self.center;
         let a = r.dir.length_squared();
         let half_b: f64 = oc * r.dir;
@@ -99,8 +78,8 @@ impl Object for Sphere {
                     tmpp = -outward_normal;
                 }
                 let uv_ =
-                    Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
-                return Option::Some(Hit_record {
+                    HitRecord::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                return Option::Some(HitRecord {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
@@ -120,8 +99,8 @@ impl Object for Sphere {
                     tmpp = -outward_normal;
                 }
                 let uv_ =
-                    Hit_record::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
-                return Option::Some(Hit_record {
+                    HitRecord::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                return Option::Some(HitRecord {
                     p: r.at(temp.clone()),
                     normal: tmpp,
                     t: temp.clone(),
@@ -132,18 +111,18 @@ impl Object for Sphere {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
-        return Option::Some(aabb::new(
+    fn bounding_box(&self) -> Option<AABB> {
+        Option::Some(AABB::new(
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
-        ));
+        ))
     }
 }
 
-pub struct xy_rect {
+pub struct XYRect {
     mp: Arc<dyn Material>,
     x0: f64,
     x1: f64,
@@ -152,7 +131,7 @@ pub struct xy_rect {
     k: f64,
 }
 
-impl xy_rect {
+impl XYRect {
     pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
         Self {
             mp: e,
@@ -165,8 +144,8 @@ impl xy_rect {
     }
 }
 
-impl Object for xy_rect {
-    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
+impl Object for XYRect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t = (self.k - r.beg.z) / r.dir.z;
         if t < t0 || t > t1 {
             return Option::None;
@@ -177,7 +156,7 @@ impl Object for xy_rect {
             return Option::None;
         }
         let outward_normal = Vec3::new(0.0, 0.0, 1.0);
-        Option::Some(Hit_record {
+        Option::Some(HitRecord {
             p: r.at(t),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
@@ -194,15 +173,15 @@ impl Object for xy_rect {
         })
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
-        return Option::Some(aabb::new(
+    fn bounding_box(&self) -> Option<AABB> {
+        Option::Some(AABB::new(
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
-        ));
+        ))
     }
 }
 
-pub struct xz_rect {
+pub struct XZRect {
     mp: Arc<dyn Material>,
     x0: f64,
     x1: f64,
@@ -211,7 +190,7 @@ pub struct xz_rect {
     k: f64,
 }
 
-impl xz_rect {
+impl XZRect {
     pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
         Self {
             mp: e,
@@ -224,8 +203,8 @@ impl xz_rect {
     }
 }
 
-impl Object for xz_rect {
-    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
+impl Object for XZRect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t = (self.k - r.beg.y) / r.dir.y;
         if t < t0 || t > t1 {
             return Option::None;
@@ -236,7 +215,7 @@ impl Object for xz_rect {
             return Option::None;
         }
         let outward_normal = Vec3::new(0.0, 1.0, 0.0);
-        Option::Some(Hit_record {
+        Option::Some(HitRecord {
             p: r.at(t),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
@@ -253,15 +232,15 @@ impl Object for xz_rect {
         })
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
-        return Option::Some(aabb::new(
+    fn bounding_box(&self) -> Option<AABB> {
+        Option::Some(AABB::new(
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
-        ));
+        ))
     }
 }
 
-pub struct yz_rect {
+pub struct YZRrect {
     mp: Arc<dyn Material>,
     y0: f64,
     y1: f64,
@@ -270,7 +249,7 @@ pub struct yz_rect {
     k: f64,
 }
 
-impl yz_rect {
+impl YZRrect {
     pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
         Self {
             mp: e,
@@ -283,8 +262,8 @@ impl yz_rect {
     }
 }
 
-impl Object for yz_rect {
-    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
+impl Object for YZRrect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t = (self.k - r.beg.x) / r.dir.x;
         if t < t0 || t > t1 {
             return Option::None;
@@ -295,7 +274,7 @@ impl Object for yz_rect {
             return Option::None;
         }
         let outward_normal = Vec3::new(1.0, 0.0, 0.0);
-        Option::Some(Hit_record {
+        Option::Some(HitRecord {
             p: r.at(t),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
@@ -312,31 +291,73 @@ impl Object for yz_rect {
         })
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
-        return Option::Some(aabb::new(
+    fn bounding_box(&self) -> Option<AABB> {
+        Option::Some(AABB::new(
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
-        ));
+        ))
     }
 }
 
-pub struct box_ {
+pub struct Box {
     pub box_min: Vec3,
     pub box_max: Vec3,
-    pub sides: Hittable_list,
+    pub sides: HittableList,
 }
 
-impl box_ {
+impl Box {
     pub fn new(mi: Vec3, ma: Vec3, p: Arc<dyn Material>) -> Self {
-        let mut wor = Hittable_list::new();
-        wor.add(Arc::new(xy_rect::new(mi.x, ma.x, mi.y, ma.y, mi.z, p.clone())));
-        wor.add(Arc::new(xy_rect::new(mi.x, ma.x, mi.y, ma.y, ma.z, p.clone())));
-        wor.add(Arc::new(xz_rect::new(mi.x, ma.x, mi.z, ma.z, mi.y, p.clone())));
-        wor.add(Arc::new(xz_rect::new(mi.x, ma.x, mi.z, ma.z, ma.y, p.clone())));
-        wor.add(Arc::new(yz_rect::new(mi.y, ma.y, mi.z, ma.z, mi.x, p.clone())));
-        wor.add(Arc::new(yz_rect::new(mi.y, ma.y, mi.z, ma.z, ma.x, p.clone())));
+        let mut wor = HittableList::new();
+        wor.add(Arc::new(XYRect::new(
+            mi.x,
+            ma.x,
+            mi.y,
+            ma.y,
+            mi.z,
+            p.clone(),
+        )));
+        wor.add(Arc::new(XYRect::new(
+            mi.x,
+            ma.x,
+            mi.y,
+            ma.y,
+            ma.z,
+            p.clone(),
+        )));
+        wor.add(Arc::new(XZRect::new(
+            mi.x,
+            ma.x,
+            mi.z,
+            ma.z,
+            mi.y,
+            p.clone(),
+        )));
+        wor.add(Arc::new(XZRect::new(
+            mi.x,
+            ma.x,
+            mi.z,
+            ma.z,
+            ma.y,
+            p.clone(),
+        )));
+        wor.add(Arc::new(YZRrect::new(
+            mi.y,
+            ma.y,
+            mi.z,
+            ma.z,
+            mi.x,
+            p.clone(),
+        )));
+        wor.add(Arc::new(YZRrect::new(
+            mi.y,
+            ma.y,
+            mi.z,
+            ma.z,
+            ma.x,
+            p.clone(),
+        )));
 
-        Self{
+        Self {
             box_min: mi,
             box_max: ma,
             sides: wor,
@@ -344,11 +365,11 @@ impl box_ {
     }
 }
 
-impl Object for box_ {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
-        return self.sides.hit(r, t_min, t_max);
+impl Object for Box {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        self.sides.hit(r, t_min, t_max)
     }
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
-        return Option::Some(aabb::new(self.box_min, self.box_max));
+    fn bounding_box(&self) -> Option<AABB> {
+        Option::Some(AABB::new(self.box_min, self.box_max))
     }
 }

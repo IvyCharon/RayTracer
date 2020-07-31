@@ -1,46 +1,45 @@
-mod AABB_;
-mod camera;
-mod object;
-mod ray;
 #[allow(clippy::float_cmp)]
-mod vec3;
-use AABB_::aabb;
-mod BVH;
-mod texture;
+mod aabb;
+use aabb::AABB;
+mod camera;
 use camera::Camera;
-use object::Hit_record;
+mod object;
+use object::Box;
+use object::HitRecord;
 use object::Object;
 use object::Sphere;
-use BVH::bvh_node;
+use object::XYRect;
+use object::XZRect;
+use object::YZRrect;
+mod ray;
+use ray::Ray;
+mod bvh;
+use bvh::BvhNode;
+mod texture;
+use texture::CheckerTexture;
+use texture::SolidColor;
+use texture::Texture;
+mod vec3;
+use vec3::Vec3;
 mod hittable_list;
-use hittable_list::Hittable_list;
+use hittable_list::HittableList;
 mod material;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use material::diffuse_light;
 use material::Dielectric;
+use material::DiffuseLight;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
-use object::xy_rect;
-use object::yz_rect;
-use object::xz_rect;
-use object::box_;
-use ray::Ray;
 use std::sync::Arc;
-use texture::checker_texture;
-use texture::solid_color;
-use texture::Texture;
 extern crate rand;
 
 const INFINITY: f64 = 1e15;
 
-pub use vec3::Vec3;
-
 fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
-        return Vec3::new(0.0, 0.0, 0.0);
+        return Vec3::zero();
     }
     match rec {
         Option::Some(rec) => {
@@ -53,11 +52,9 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
                         s.attenustion,
                     );
             }
-            return emitted;
+            emitted
         }
-        Option::None => {
-            return back_ground;
-        }
+        Option::None => back_ground,
     }
 }
 
@@ -68,42 +65,107 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x > max {
         return max;
     }
-    return x;
+    x
 }
 
 fn main() {
-    const aspect_ratio: f64 = 1.0;
-    const image_width: u32 = 600;
-    const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 200;
+    let samples_per_pixel = 400;
     let max_depth = 50;
+
+    let choose = 1;
+    let world: Arc<dyn Object>;
+    let aspect_ratio: f64;
+    let image_width: u32;
+    let image_height: u32;
+    let lookfrom: Vec3;
+    let lookat: Vec3;
+    let vup: Vec3;
+    let dist_to_focus: f64;
+    let aperture: f64;
+    let background: Vec3;
+    let cam: Camera;
+    match choose {
+        1 => {
+            //night
+            world = HittableList::night();
+            aspect_ratio = 3.0 / 2.0;
+            image_width = 1200;
+            image_height = ((image_width as f64) / aspect_ratio) as u32;
+
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            lookat = Vec3::new(0.0, 0.0, 0.0);
+            vup = Vec3::new(0.0, 1.0, 0.0);
+            dist_to_focus = 10.0;
+            aperture = 0.1;
+            background = Vec3::new(0.0, 0.0, 0.0);
+
+            cam = Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                20.0,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+            );
+        }
+        2 => {
+            //cornell box
+            world = HittableList::cornell_box();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            image_height = ((image_width as f64) / aspect_ratio) as u32;
+
+            lookfrom = Vec3::new(278.0, 278.0, -800.0);
+            lookat = Vec3::new(278.0, 278.0, 0.0);
+            vup = Vec3::new(0.0, 1.0, 0.0);
+            dist_to_focus = 10.0;
+            aperture = 0.0;
+            background = Vec3::new(0.0, 0.0, 0.0);
+
+            cam = Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                40.0,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+            );
+        }
+        _ => {
+            //day
+            world = HittableList::random_scene();
+            aspect_ratio = 3.0 / 2.0;
+            image_width = 400;
+            image_height = ((image_width as f64) / aspect_ratio) as u32;
+
+            lookfrom = Vec3::new(13.0, 2.0, 3.0);
+            lookat = Vec3::new(0.0, 0.0, 0.0);
+            vup = Vec3::new(0.0, 1.0, 0.0);
+            dist_to_focus = 10.0;
+            aperture = 0.1;
+            background = Vec3::new(0.7, 0.8, 1.0);
+
+            cam = Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                20.0,
+                aspect_ratio,
+                aperture,
+                dist_to_focus,
+            );
+        }
+    }
+
     let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
     let bar = ProgressBar::new(image_height as u64);
-
-    let world = Hittable_list::cornell_box();
-
-    let lookfrom = Vec3::new(278.0, 278.0, -800.0);
-    let lookat = Vec3::new(278.0, 278.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.0;
-    let background = Vec3::new(0.0, 0.0, 0.0);
-    //let background = Vec3::new(0.7, 0.8, 1.0);
-
-    let cam = Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        40.0,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-    );
 
     for j in 0..image_height {
         for i in 0..image_width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
-            for s in 0..samples_per_pixel.clone() {
+            for _s in 0..samples_per_pixel.clone() {
                 let u = (i as f64 + rand::random::<f64>()) / (image_width as f64 - 1.0);
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);

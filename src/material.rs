@@ -1,28 +1,25 @@
-use crate::checker_texture;
-use crate::solid_color;
-use crate::Hit_record;
-use crate::Object;
+use crate::HitRecord;
 use crate::Ray;
+use crate::SolidColor;
 use crate::Texture;
 use crate::Vec3;
 use std::sync::Arc;
 extern crate rand;
-use rand::Rng;
 
 pub trait Material {
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret;
-    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
-        return Vec3::zero();
+    fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet;
+    fn emitted(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
+        Vec3::zero()
     }
 }
 
-pub struct Sca_ret {
+pub struct ScaRet {
     pub scattered: Ray,
     pub attenustion: Vec3,
     pub jud: bool,
 }
 
-impl Sca_ret {
+impl ScaRet {
     pub fn new(r: Ray, v: Vec3, j: bool) -> Self {
         Self {
             scattered: r,
@@ -39,7 +36,7 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(v: Vec3) -> Self {
         Lambertian {
-            albedo: Arc::new(solid_color::new(v)),
+            albedo: Arc::new(SolidColor::new(v)),
         }
     }
 
@@ -49,13 +46,13 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
+    fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
         let sca_dir = rec.normal + Vec3::random_unit_vec();
-        return Sca_ret::new(
+        ScaRet::new(
             Ray::new(rec.p, sca_dir.clone()),
             self.albedo.value(rec.u, rec.v, rec.p),
             true,
-        );
+        )
     }
 }
 
@@ -80,14 +77,14 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
+    fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet {
         let reflected = Vec3::reflect(r_in.dir.unit(), rec.normal);
         let sca = Ray::new(
             rec.p,
             reflected.clone() + Vec3::random_in_unit_sphere() * self.fuzz,
         );
         let at = self.albedo;
-        return Sca_ret::new(sca.clone(), at, ((sca.clone()).dir * rec.normal) > 0.0);
+        ScaRet::new(sca.clone(), at, ((sca.clone()).dir * rec.normal) > 0.0)
     }
 }
 
@@ -103,18 +100,12 @@ impl Dielectric {
     pub fn schlick(cos: f64, ri: f64) -> f64 {
         let mut r0 = (1.0 - ri.clone()) / (1.0 + ri.clone());
         r0 *= r0.clone();
-        return r0.clone()
-            + (1.0 - r0.clone())
-                * (1.0 - cos.clone())
-                * (1.0 - cos.clone())
-                * (1.0 - cos.clone())
-                * (1.0 - cos.clone())
-                * (1.0 - cos.clone());
+        r0.clone() + (1.0 - r0.clone()) * (1.0 - cos.clone()).powi(5)
     }
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
+    fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet {
         let eta: f64 = {
             if rec.front_face {
                 1.0 / self.ref_idx
@@ -132,37 +123,37 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta.clone() * cos_theta.clone()).sqrt();
         if eta.clone() * sin_theta > 1.0 {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
         let rp = Dielectric::schlick(cos_theta.clone(), eta.clone());
         if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return Sca_ret::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
-        return Sca_ret::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true);
+        ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true)
     }
 }
 
-pub struct diffuse_light {
+pub struct DiffuseLight {
     pub emit: Arc<dyn Texture>,
 }
 
-impl diffuse_light {
+impl DiffuseLight {
     pub fn new(m: Arc<dyn Texture>) -> Self {
         Self { emit: m }
     }
 
-    pub fn new_(p: Vec3) -> Self{
-        Self{
-            emit: Arc::new(solid_color::new(p)),
+    pub fn new_(p: Vec3) -> Self {
+        Self {
+            emit: Arc::new(SolidColor::new(p)),
         }
     }
 }
 
-impl Material for diffuse_light {
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
-        Sca_ret {
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: Ray, _rec: &HitRecord) -> ScaRet {
+        ScaRet {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),
             attenustion: Vec3::zero(),
             jud: false,
@@ -170,6 +161,6 @@ impl Material for diffuse_light {
     }
 
     fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
-        return self.emit.value(u, v, p);
+        self.emit.value(u, v, p)
     }
 }

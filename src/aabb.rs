@@ -1,15 +1,13 @@
-use crate::Object;
 use crate::Ray;
 use crate::Vec3;
-use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
-pub struct aabb {
+pub struct AABB {
     pub min: Vec3,
     pub max: Vec3,
 }
 
-impl aabb {
+impl AABB {
     pub fn new(a: Vec3, b: Vec3) -> Self {
         Self { min: a, max: b }
     }
@@ -31,13 +29,13 @@ impl aabb {
     }
 
     pub fn hit(self, r: Ray, tmin: f64, tmax: f64) -> bool {
-        let mut tmi = tmin;
-        let mut tma = tmax;
+        let tmi = tmin;
+        let tma = tmax;
         for i in 0..3 {
-            let invD = 1.0 / r.dir.get(i);
-            let mut t0 = (self.min.get(i) - r.beg.get(i)) * invD;
-            let mut t1 = (self.max.get(i) - r.beg.get(i)) * invD;
-            if invD < 0.0 {
+            let inv_d = 1.0 / r.dir.get(i);
+            let mut t0 = (self.min.get(i) - r.beg.get(i)) * inv_d;
+            let mut t1 = (self.max.get(i) - r.beg.get(i)) * inv_d;
+            if inv_d < 0.0 {
                 let tmp = t0;
                 t0 = t1;
                 t1 = tmp;
@@ -60,20 +58,20 @@ impl aabb {
                 return false;
             }
         }
-        return true;
+        true
     }
 
-    pub fn surrounding_box(box1: aabb, box2: aabb) -> aabb {
+    pub fn surrounding_box(box1: AABB, box2: AABB) -> AABB {
         let small = Vec3::new(
-            aabb::min(box1.min.x, box2.min.x),
-            aabb::min(box1.min.y, box2.min.y),
-            aabb::min(box1.min.z, box2.min.z),
+            AABB::min(box1.min.x, box2.min.x),
+            AABB::min(box1.min.y, box2.min.y),
+            AABB::min(box1.min.z, box2.min.z),
         );
         let big = Vec3::new(
-            aabb::max(box1.max.x, box2.max.x),
-            aabb::max(box1.max.y, box2.max.y),
-            aabb::max(box1.max.z, box2.max.z),
+            AABB::max(box1.max.x, box2.max.x),
+            AABB::max(box1.max.y, box2.max.y),
+            AABB::max(box1.max.z, box2.max.z),
         );
-        return aabb::new(small, big);
+        AABB::new(small, big)
     }
 }
