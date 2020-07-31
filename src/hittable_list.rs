@@ -216,9 +216,11 @@ impl HittableList {
         )));
         world.add(Arc::new(Sphere::new(
             Vec3::new(3.0, 0.45, 0.0),
-            0.45,
+            0.45 * 0.99999,
             Arc::new(mat),
         )));
+        let ke = Arc::new(Dielectric::new(4.0));
+        world.add(Arc::new(Sphere::new(Vec3::new(3.0, 0.45, 0.0), 0.45, ke)));
 
         Arc::new(BvhNode::new(world, 0.001, INFINITY))
     }
