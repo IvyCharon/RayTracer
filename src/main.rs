@@ -69,7 +69,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 400;
+    let samples_per_pixel = 500;
     let max_depth = 50;
 
     let choose = 1;
@@ -89,7 +89,7 @@ fn main() {
             //night
             world = HittableList::night();
             aspect_ratio = 3.0 / 2.0;
-            image_width = 1200;
+            image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
