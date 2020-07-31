@@ -1,6 +1,6 @@
 use crate::Ray;
 use crate::Vec3;
-const PI: f64 = 3.1415926535897932385;
+const PI: f64 = 3.141_592_653_589_793;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Camera {
     pub origin: Vec3,
@@ -26,14 +26,14 @@ impl Camera {
         let theta = vfov * PI / 180.0;
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h;
-        let viewport_width = aspect_ratio.clone() * viewport_height.clone();
+        let viewport_width = aspect_ratio * viewport_height;
 
         let ww = (lookfrom - lookat).unit();
-        let uu = (Vec3::cross(vup, ww.clone())).unit();
-        let vv = Vec3::cross(ww.clone(), uu.clone());
+        let uu = (Vec3::cross(vup, ww)).unit();
+        let vv = Vec3::cross(ww, uu);
 
         Self {
-            origin: lookfrom.clone(),
+            origin: lookfrom,
             lower_left_corner: lookfrom
                 - uu * viewport_width * focus_dist / 2.0
                 - vv * viewport_height * focus_dist / 2.0

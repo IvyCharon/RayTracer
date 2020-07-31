@@ -5,7 +5,7 @@ use crate::Vec3;
 use crate::AABB;
 use std::sync::Arc;
 
-const PI: f64 = 3.1415926535897932385;
+const PI: f64 = 3.141_592_653_589_793;
 
 pub trait Object {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
@@ -71,18 +71,17 @@ impl Object for Sphere {
 
             let mut temp = (-half_b - root) / a;
             if temp < t_max && temp > t_min {
-                let outward_normal: Vec3 = (r.at(temp.clone()) - self.center) / self.radius;
+                let outward_normal: Vec3 = (r.at(temp) - self.center) / self.radius;
                 let k = (outward_normal * r.dir) < 0.0;
                 let mut tmpp = outward_normal;
                 if !k {
                     tmpp = -outward_normal;
                 }
-                let uv_ =
-                    HitRecord::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                let uv_ = HitRecord::get_sphere_uv((r.at(temp) - self.center) / self.radius);
                 return Option::Some(HitRecord {
-                    p: r.at(temp.clone()),
+                    p: r.at(temp),
                     normal: tmpp,
-                    t: temp.clone(),
+                    t: temp,
                     front_face: k,
                     mat: Option::Some(self.mat.clone()),
                     u: uv_.u,
@@ -92,18 +91,17 @@ impl Object for Sphere {
 
             temp = (-half_b + root) / a;
             if temp < t_max && temp > t_min {
-                let outward_normal: Vec3 = (r.at(temp.clone()) - self.center) / self.radius;
+                let outward_normal: Vec3 = (r.at(temp) - self.center) / self.radius;
                 let k = (outward_normal * r.dir) < 0.0;
                 let mut tmpp = outward_normal;
                 if !k {
                     tmpp = -outward_normal;
                 }
-                let uv_ =
-                    HitRecord::get_sphere_uv((r.at(temp.clone()) - self.center) / self.radius);
+                let uv_ = HitRecord::get_sphere_uv((r.at(temp) - self.center) / self.radius);
                 return Option::Some(HitRecord {
-                    p: r.at(temp.clone()),
+                    p: r.at(temp),
                     normal: tmpp,
-                    t: temp.clone(),
+                    t: temp,
                     front_face: k,
                     mat: Option::Some(self.mat.clone()),
                     u: uv_.u,

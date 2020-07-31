@@ -36,9 +36,7 @@ impl AABB {
             let mut t0 = (self.min.get(i) - r.beg.get(i)) * inv_d;
             let mut t1 = (self.max.get(i) - r.beg.get(i)) * inv_d;
             if inv_d < 0.0 {
-                let tmp = t0;
-                t0 = t1;
-                t1 = tmp;
+                std::mem::swap(&mut t0, &mut t1);
             }
             let tmi = {
                 if t0 > tmi {

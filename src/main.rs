@@ -159,13 +159,13 @@ fn main() {
         }
     }
 
-    let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
+    let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
     let bar = ProgressBar::new(image_height as u64);
 
     for j in 0..image_height {
         for i in 0..image_width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
-            for _s in 0..samples_per_pixel.clone() {
+            for _s in 0..samples_per_pixel {
                 let u = (i as f64 + rand::random::<f64>()) / (image_width as f64 - 1.0);
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
@@ -174,21 +174,9 @@ fn main() {
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([
-                (clamp(
-                    (col.x / (samples_per_pixel.clone() as f64)).sqrt(),
-                    0.0,
-                    0.999,
-                ) * 255.999) as u8,
-                (clamp(
-                    (col.y / (samples_per_pixel.clone() as f64)).sqrt(),
-                    0.0,
-                    255.999,
-                ) * 255.999) as u8,
-                (clamp(
-                    (col.z / (samples_per_pixel.clone() as f64)).sqrt(),
-                    0.0,
-                    255.999,
-                ) * 255.999) as u8,
+                (clamp((col.x / (samples_per_pixel as f64)).sqrt(), 0.0, 0.999) * 255.999) as u8,
+                (clamp((col.y / (samples_per_pixel as f64)).sqrt(), 0.0, 255.999) * 255.999) as u8,
+                (clamp((col.z / (samples_per_pixel as f64)).sqrt(), 0.0, 255.999) * 255.999) as u8,
             ]);
         }
         bar.inc(1);

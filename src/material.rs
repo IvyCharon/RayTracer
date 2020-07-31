@@ -49,7 +49,7 @@ impl Material for Lambertian {
     fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
         let sca_dir = rec.normal + Vec3::random_unit_vec();
         ScaRet::new(
-            Ray::new(rec.p, sca_dir.clone()),
+            Ray::new(rec.p, sca_dir),
             self.albedo.value(rec.u, rec.v, rec.p),
             true,
         )
@@ -79,12 +79,9 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet {
         let reflected = Vec3::reflect(r_in.dir.unit(), rec.normal);
-        let sca = Ray::new(
-            rec.p,
-            reflected.clone() + Vec3::random_in_unit_sphere() * self.fuzz,
-        );
+        let sca = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
         let at = self.albedo;
-        ScaRet::new(sca.clone(), at, ((sca.clone()).dir * rec.normal) > 0.0)
+        ScaRet::new(sca, at, (sca.dir * rec.normal) > 0.0)
     }
 }
 
@@ -98,9 +95,9 @@ impl Dielectric {
     }
 
     pub fn schlick(cos: f64, ri: f64) -> f64 {
-        let mut r0 = (1.0 - ri.clone()) / (1.0 + ri.clone());
-        r0 *= r0.clone();
-        r0.clone() + (1.0 - r0.clone()) * (1.0 - cos.clone()).powi(5)
+        let mut r0 = (1.0 - ri) / (1.0 + ri);
+        r0 *= r0;
+        r0 + (1.0 - r0) * (1.0 - cos).powi(5)
     }
 }
 
@@ -120,12 +117,12 @@ impl Material for Dielectric {
                 -r_in.dir.unit() * rec.normal
             }
         };
-        let sin_theta = (1.0 - cos_theta.clone() * cos_theta.clone()).sqrt();
-        if eta.clone() * sin_theta > 1.0 {
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        if eta * sin_theta > 1.0 {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
             return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
         }
-        let rp = Dielectric::schlick(cos_theta.clone(), eta.clone());
+        let rp = Dielectric::schlick(cos_theta, eta);
         if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
             return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);

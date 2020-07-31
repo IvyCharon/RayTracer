@@ -5,7 +5,7 @@ use std::ops::{Add, AddAssign};
 extern crate rand;
 use rand::Rng;
 
-const PI: f64 = 3.1415926535897932385;
+const PI: f64 = 3.141_592_653_589_793;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
@@ -263,13 +263,13 @@ impl Vec3 {
         let mut rng = rand::thread_rng();
         let a = rng.gen_range(0.0, PI);
         let z = rng.gen_range(-1.0, 1.0);
-        let r: f64 = ((1.0 - z.clone() * z.clone()) as f64).sqrt();
+        let r: f64 = ((1.0 - z * z) as f64).sqrt();
         Vec3::new(r * a.cos(), r * a.sin(), z)
     }
 
     pub fn _random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
-        if in_unit_sphere.clone() * normal.clone() > 0.0 {
+        if in_unit_sphere * *normal > 0.0 {
             return in_unit_sphere;
         }
         -in_unit_sphere
