@@ -142,7 +142,7 @@ impl Object for Sphere {
     }
 }
 
-pub struct xy_rect{
+pub struct xy_rect {
     mp: Arc<dyn Material>,
     x0: f64,
     x1: f64,
@@ -151,9 +151,9 @@ pub struct xy_rect{
     k: f64,
 }
 
-impl xy_rect{
-    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self{
-        Self{
+impl xy_rect {
+    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+        Self {
             mp: e,
             x0: a,
             x1: b,
@@ -164,24 +164,24 @@ impl xy_rect{
     }
 }
 
-impl Object for xy_rect{
-    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record>{
+impl Object for xy_rect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
         let t = (self.k - r.beg.z) / r.dir.z;
-        if t < t0 || t > t1{
+        if t < t0 || t > t1 {
             return Option::None;
         }
         let x = r.beg.x + r.dir.x * t;
         let y = r.beg.y + r.dir.y * t;
-        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1{
+        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
             return Option::None;
         }
-        let outward_normal = Vec3::new(0.0,0.0,1.0);
-        Option::Some(Hit_record{
+        let outward_normal = Vec3::new(0.0, 0.0, 1.0);
+        Option::Some(Hit_record {
             p: r.at(t),
             normal: {
-                if (r.dir * outward_normal) < 0.0{
+                if (r.dir * outward_normal) < 0.0 {
                     outward_normal
-                }else{
+                } else {
                     -outward_normal
                 }
             },
@@ -193,11 +193,10 @@ impl Object for xy_rect{
         })
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>{
-        return Option::Some(
-            aabb::new(
-                Vec3::new(self.x0,self.y0, self.k-0.0001), 
-                Vec3::new(self.x1, self.y1, self.k+0.0001)
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
+        return Option::Some(aabb::new(
+            Vec3::new(self.x0, self.y0, self.k - 0.0001),
+            Vec3::new(self.x1, self.y1, self.k + 0.0001),
         ));
     }
 }

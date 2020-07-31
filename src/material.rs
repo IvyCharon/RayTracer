@@ -1,17 +1,17 @@
 use crate::checker_texture;
 use crate::solid_color;
 use crate::Hit_record;
+use crate::Object;
 use crate::Ray;
 use crate::Texture;
 use crate::Vec3;
 use std::sync::Arc;
-use crate::Object;
 extern crate rand;
 use rand::Rng;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret;
-    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3{
+    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         return Vec3::zero();
     }
 }
@@ -144,28 +144,26 @@ impl Material for Dielectric {
     }
 }
 
-pub struct diffuse_light{
+pub struct diffuse_light {
     pub emit: Arc<dyn Texture>,
 }
 
-impl diffuse_light{
-    pub fn new(m: Arc<dyn Texture>) -> Self{
-        Self{
-            emit: m,
-        }
+impl diffuse_light {
+    pub fn new(m: Arc<dyn Texture>) -> Self {
+        Self { emit: m }
     }
 }
 
-impl Material for diffuse_light{
-    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret{
-        Sca_ret{
+impl Material for diffuse_light {
+    fn scatter(&self, r_in: Ray, rec: &Hit_record) -> Sca_ret {
+        Sca_ret {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),
             attenustion: Vec3::zero(),
             jud: false,
         }
     }
 
-    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3{
+    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         return self.emit.value(u, v, p);
     }
 }

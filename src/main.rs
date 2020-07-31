@@ -1,7 +1,7 @@
 mod AABB_;
 mod camera;
-mod ray;
 mod object;
+mod ray;
 #[allow(clippy::float_cmp)]
 mod vec3;
 use AABB_::aabb;
@@ -17,11 +17,11 @@ use hittable_list::Hittable_list;
 mod material;
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
+use material::diffuse_light;
 use material::Dielectric;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
-use material::diffuse_light;
 use object::xy_rect;
 use ray::Ray;
 use std::sync::Arc;
@@ -44,7 +44,11 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<bvh_node>, depth: i32) -> Vec
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
             let emitted = rec.mat.unwrap().emitted(rec.u, rec.v, rec.p);
             if s.jud {
-                return emitted + Vec3::elemul(ray_color(s.scattered, back_ground, world, depth - 1), s.attenustion);
+                return emitted
+                    + Vec3::elemul(
+                        ray_color(s.scattered, back_ground, world, depth - 1),
+                        s.attenustion,
+                    );
             }
             return emitted;
         }
