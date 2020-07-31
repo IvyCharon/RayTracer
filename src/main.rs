@@ -23,6 +23,8 @@ use material::Lambertian;
 use material::Material;
 use material::Metal;
 use object::xy_rect;
+use object::yz_rect;
+use object::xz_rect;
 use ray::Ray;
 use std::sync::Arc;
 use texture::checker_texture;
@@ -34,7 +36,7 @@ const INFINITY: f64 = 1e15;
 
 pub use vec3::Vec3;
 
-fn ray_color(r: Ray, back_ground: Vec3, world: Arc<bvh_node>, depth: i32) -> Vec3 {
+fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
@@ -69,29 +71,29 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    const aspect_ratio: f64 = 16.0 / 9.0;
-    const image_width: u32 = 400;
+    const aspect_ratio: f64 = 1.0;
+    const image_width: u32 = 600;
     const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 200;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
     let bar = ProgressBar::new(image_height as u64);
 
-    let world = Hittable_list::test_xy();
+    let world = Hittable_list::cornell_box();
 
-    let lookfrom = Vec3::new(26.0, 3.0, 6.0);
-    let lookat = Vec3::new(0.0, 2.0, 0.0);
+    let lookfrom = Vec3::new(278.0, 278.0, -800.0);
+    let lookat = Vec3::new(278.0, 278.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 20.0;
-    let aperture = 0.1;
-    //let background = Vec3::new(0.0, 0.0, 0.0);
-    let background = Vec3::new(0.7, 0.8, 1.0);
+    let dist_to_focus = 10.0;
+    let aperture = 0.0;
+    let background = Vec3::new(0.0, 0.0, 0.0);
+    //let background = Vec3::new(0.7, 0.8, 1.0);
 
     let cam = Camera::new(
         lookfrom,
         lookat,
         vup,
-        20.0,
+        40.0,
         aspect_ratio,
         aperture,
         dist_to_focus,

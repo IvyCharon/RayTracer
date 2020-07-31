@@ -200,3 +200,121 @@ impl Object for xy_rect {
         ));
     }
 }
+
+pub struct xz_rect {
+    mp: Arc<dyn Material>,
+    x0: f64,
+    x1: f64,
+    z0: f64,
+    z1: f64,
+    k: f64,
+}
+
+impl xz_rect {
+    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+        Self {
+            mp: e,
+            x0: a,
+            x1: b,
+            z0: c,
+            z1: d,
+            k: f,
+        }
+    }
+}
+
+impl Object for xz_rect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
+        let t = (self.k - r.beg.y) / r.dir.y;
+        if t < t0 || t > t1 {
+            return Option::None;
+        }
+        let x = r.beg.x + r.dir.x * t;
+        let z = r.beg.z + r.dir.z * t;
+        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
+            return Option::None;
+        }
+        let outward_normal = Vec3::new(0.0, 1.0, 0.0);
+        Option::Some(Hit_record {
+            p: r.at(t),
+            normal: {
+                if (r.dir * outward_normal) < 0.0 {
+                    outward_normal
+                } else {
+                    -outward_normal
+                }
+            },
+            t: t,
+            front_face: (r.dir * outward_normal) < 0.0,
+            mat: Option::Some(self.mp.clone()),
+            u: (x - self.x0) / (self.x1 - self.x0),
+            v: (z - self.z0) / (self.z1 - self.z0),
+        })
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
+        return Option::Some(aabb::new(
+            Vec3::new(self.x0, self.k - 0.0001, self.z0),
+            Vec3::new(self.x1, self.k + 0.0001, self.z1),
+        ));
+    }
+}
+
+pub struct yz_rect {
+    mp: Arc<dyn Material>,
+    y0: f64,
+    y1: f64,
+    z0: f64,
+    z1: f64,
+    k: f64,
+}
+
+impl yz_rect {
+    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+        Self {
+            mp: e,
+            y0: a,
+            y1: b,
+            z0: c,
+            z1: d,
+            k: f,
+        }
+    }
+}
+
+impl Object for yz_rect {
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record> {
+        let t = (self.k - r.beg.x) / r.dir.x;
+        if t < t0 || t > t1 {
+            return Option::None;
+        }
+        let y = r.beg.y + r.dir.y * t;
+        let z = r.beg.z + r.dir.z * t;
+        if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
+            return Option::None;
+        }
+        let outward_normal = Vec3::new(1.0, 0.0, 0.0);
+        Option::Some(Hit_record {
+            p: r.at(t),
+            normal: {
+                if (r.dir * outward_normal) < 0.0 {
+                    outward_normal
+                } else {
+                    -outward_normal
+                }
+            },
+            t: t,
+            front_face: (r.dir * outward_normal) < 0.0,
+            mat: Option::Some(self.mp.clone()),
+            u: (y - self.y0) / (self.y1 - self.y0),
+            v: (z - self.z0) / (self.z1 - self.z0),
+        })
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
+        return Option::Some(aabb::new(
+            Vec3::new(self.k - 0.0001, self.y0, self.z0),
+            Vec3::new(self.k + 0.0001, self.y1, self.z1),
+        ));
+    }
+}

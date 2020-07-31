@@ -152,6 +152,12 @@ impl diffuse_light {
     pub fn new(m: Arc<dyn Texture>) -> Self {
         Self { emit: m }
     }
+
+    pub fn new_(p: Vec3) -> Self{
+        Self{
+            emit: Arc::new(solid_color::new(p)),
+        }
+    }
 }
 
 impl Material for diffuse_light {
