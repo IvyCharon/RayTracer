@@ -6,6 +6,7 @@ use crate::solid_color;
 use crate::xy_rect;
 use crate::yz_rect;
 use crate::xz_rect;
+use crate::box_;
 use crate::Dielectric;
 use crate::Hit_record;
 use crate::Lambertian;
@@ -188,6 +189,9 @@ impl Hittable_list {
         world.add(Arc::new(xz_rect::new(0.0,555.0,0.0,555.0,555.0,white.clone())));
         world.add(Arc::new(xy_rect::new(0.0,555.0,0.0,555.0,555.0,white.clone())));
         
+        world.add(Arc::new(box_::new(Vec3::new(130.0,0.0,65.0), Vec3::new(295.0,165.0,230.0), white.clone())));
+        world.add(Arc::new(box_::new(Vec3::new(265.0,0.0,295.0), Vec3::new(430.0,330.0,460.0), white.clone())));
+
         Arc::new(world)
     }
 }

@@ -25,6 +25,7 @@ use material::Metal;
 use object::xy_rect;
 use object::yz_rect;
 use object::xz_rect;
+use object::box_;
 use ray::Ray;
 use std::sync::Arc;
 use texture::checker_texture;

@@ -2,6 +2,7 @@ use crate::aabb;
 use crate::Material;
 use crate::Ray;
 use crate::Vec3;
+use crate::Hittable_list;
 use std::sync::Arc;
 
 const PI: f64 = 3.1415926535897932385;
@@ -316,5 +317,38 @@ impl Object for yz_rect {
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
         ));
+    }
+}
+
+pub struct box_ {
+    pub box_min: Vec3,
+    pub box_max: Vec3,
+    pub sides: Hittable_list,
+}
+
+impl box_ {
+    pub fn new(mi: Vec3, ma: Vec3, p: Arc<dyn Material>) -> Self {
+        let mut wor = Hittable_list::new();
+        wor.add(Arc::new(xy_rect::new(mi.x, ma.x, mi.y, ma.y, mi.z, p.clone())));
+        wor.add(Arc::new(xy_rect::new(mi.x, ma.x, mi.y, ma.y, ma.z, p.clone())));
+        wor.add(Arc::new(xz_rect::new(mi.x, ma.x, mi.z, ma.z, mi.y, p.clone())));
+        wor.add(Arc::new(xz_rect::new(mi.x, ma.x, mi.z, ma.z, ma.y, p.clone())));
+        wor.add(Arc::new(yz_rect::new(mi.y, ma.y, mi.z, ma.z, mi.x, p.clone())));
+        wor.add(Arc::new(yz_rect::new(mi.y, ma.y, mi.z, ma.z, ma.x, p.clone())));
+
+        Self{
+            box_min: mi,
+            box_max: ma,
+            sides: wor,
+        }
+    }
+}
+
+impl Object for box_ {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record> {
+        return self.sides.hit(r, t_min, t_max);
+    }
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb> {
+        return Option::Some(aabb::new(self.box_min, self.box_max));
     }
 }
