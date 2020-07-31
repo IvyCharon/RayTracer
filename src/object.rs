@@ -5,8 +5,6 @@ use crate::Vec3;
 use crate::AABB;
 use std::sync::Arc;
 
-const PI: f64 = 3.141_592_653_589_793;
-
 pub trait Object {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self) -> Option<AABB>;
@@ -25,8 +23,8 @@ impl HitRecord {
     pub fn get_sphere_uv(p: Vec3) -> UV {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
-        let u = 1.0 - (phi + PI) / (2.0 * PI);
-        let v = (theta + PI / 2.0) / PI;
+        let u = 1.0 - (phi + std::f64::consts::PI) / (2.0 * std::f64::consts::PI);
+        let v = (theta + std::f64::consts::PI / 2.0) / std::f64::consts::PI;
         UV::new(u, v)
     }
 }

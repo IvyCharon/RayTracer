@@ -1,6 +1,5 @@
 use crate::Ray;
 use crate::Vec3;
-const PI: f64 = 3.141_592_653_589_793;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Camera {
     pub origin: Vec3,
@@ -23,7 +22,7 @@ impl Camera {
         aperture: f64,
         focus_dist: f64,
     ) -> Self {
-        let theta = vfov * PI / 180.0;
+        let theta = vfov * std::f64::consts::PI / 180.0;
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;

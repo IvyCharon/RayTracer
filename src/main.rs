@@ -170,7 +170,7 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, background, world.clone(), max_depth.clone());
+                col += ray_color(r, background, world.clone(), max_depth);
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([

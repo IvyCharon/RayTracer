@@ -5,8 +5,6 @@ use std::ops::{Add, AddAssign};
 extern crate rand;
 use rand::Rng;
 
-const PI: f64 = 3.141_592_653_589_793;
-
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -261,7 +259,7 @@ impl Vec3 {
 
     pub fn random_unit_vec() -> Vec3 {
         let mut rng = rand::thread_rng();
-        let a = rng.gen_range(0.0, PI);
+        let a = rng.gen_range(0.0, std::f64::consts::PI);
         let z = rng.gen_range(-1.0, 1.0);
         let r: f64 = ((1.0 - z * z) as f64).sqrt();
         Vec3::new(r * a.cos(), r * a.sin(), z)
@@ -303,6 +301,7 @@ impl Vec3 {
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -439,3 +438,4 @@ mod tests {
         Vec3::new(0.0, 0.0, 0.0).unit();
     }
 }
+*/
