@@ -54,7 +54,7 @@ impl Hittable_list {
 
     pub fn random_scene() -> Arc<bvh_node> {
         let mut world = Hittable_list::new();
-
+    
         let checker = Arc::new(checker_texture::new(
             Vec3::new(0.2, 0.3, 0.1),
             Vec3::new(0.9, 0.9, 0.9),
@@ -64,7 +64,7 @@ impl Hittable_list {
             1000.0,
             Arc::new(Lambertian::new_(checker)),
         )));
-
+        
         for a in -6..6 {
             for b in -6..6 {
                 let choose_mat = rand::random::<f64>();
@@ -103,7 +103,7 @@ impl Hittable_list {
                 }
             }
         }
-        /*let mat1 = Dielectric::new(1.5);
+        let mat1 = Dielectric::new(1.5);
         world.add(Arc::new(Sphere::new(
             Vec3::new(0.0, 1.0, 0.0),
             1.0,
@@ -122,30 +122,28 @@ impl Hittable_list {
             Vec3::new(4.0, 1.0, 0.0),
             1.0,
             Arc::new(mat3),
-        )));*/
-        /*let dl = Arc::new(diffuse_light::new(Arc::new(solid_color::new(Vec3::new(4.0,4.0,4.0)))));
-        world.add(Arc::new(Sphere::new(
-            Vec3::new(0.0, 1.0, 0.0),
-            0.3,
-            dl)));
-        let dl = Arc::new(diffuse_light::new(Arc::new(solid_color::new(Vec3::new(4.0,4.0,4.0)))));
-        world.add(Arc::new(Sphere::new(
-            Vec3::new(-4.0, 1.0, 0.0),
-            0.3,
-            dl
         )));
-        let dl = Arc::new(diffuse_light::new(Arc::new(solid_color::new(Vec3::new(4.0,4.0,4.0)))));
+        Arc::new(bvh_node::new(world, 0.001, INFINITY))
+    }
+
+    pub fn test_xy() -> Arc<bvh_node>{
+        let mut world = Hittable_list::new();
+        let checker = Arc::new(checker_texture::new(
+            Vec3::new(0.2, 0.3, 0.1),
+            Vec3::new(0.9, 0.9, 0.9),
+        ));
         world.add(Arc::new(Sphere::new(
-            Vec3::new(4.0, 1.0, 0.0),
-            0.3,
-            dl
-        )));*/
-        let dl = Arc::new(diffuse_light::new(Arc::new(checker_texture::new(Vec3::new(0.78,0.58,0.64), Vec3::new(0.9, 0.9,0.9)))));
-        world.add(Arc::new(Sphere::new(
-            Vec3::new(2.0, 0.5, 1.0),
-            0.5,
-            dl
+            Vec3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Arc::new(Lambertian::new_(checker)),
         )));
+        
+        let tmp = Arc::new(Lambertian::new(Vec3::new(0.5,0.5,0.5)));
+        world.add(Arc::new(Sphere::new(Vec3::new(0.0,2.0,0.0),2.0,tmp)));
+
+        let ttmp = Arc::new(Lambertian::new(Vec3::new(0.2,0.4,0.3)));
+        world.add(Arc::new(xy_rect::new(3.0,5.0,1.0,3.0,-2.0,ttmp)));
+
         Arc::new(bvh_node::new(world, 0.001, INFINITY))
     }
 

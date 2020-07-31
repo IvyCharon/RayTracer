@@ -162,8 +162,10 @@ impl xy_rect{
             k: f,
         }
     }
+}
 
-    pub fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record>{
+impl Object for xy_rect{
+    fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<Hit_record>{
         let t = (self.k - r.beg.z) / r.dir.z;
         if t < t0 || t > t1{
             return Option::None;
@@ -189,12 +191,6 @@ impl xy_rect{
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (y - self.y0) / (self.y1 - self.y0),
         })
-    }
-}
-
-impl Object for xy_rect{
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<Hit_record>{
-        return Option::None;
     }
 
     fn bounding_box(&self, t0: f64, t1: f64) -> Option<aabb>{

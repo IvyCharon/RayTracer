@@ -66,21 +66,22 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 
 fn main() {
     const aspect_ratio: f64 = 16.0 / 9.0;
-    const image_width: u32 = 1600;
+    const image_width: u32 = 400;
     const image_height: u32 = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let mut img: RgbImage = ImageBuffer::new(image_width.clone(), image_height.clone());
     let bar = ProgressBar::new(image_height as u64);
 
-    let world = Hittable_list::random_scene();
+    let world = Hittable_list::test_xy();
 
-    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let lookfrom = Vec3::new(26.0, 3.0, 6.0);
+    let lookat = Vec3::new(0.0, 2.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 20.0;
     let aperture = 0.1;
-    let background = Vec3::new(0.0, 0.0, 0.00);
+    //let background = Vec3::new(0.0, 0.0, 0.0);
+    let background = Vec3::new(0.7, 0.8, 1.0);
 
     let cam = Camera::new(
         lookfrom,

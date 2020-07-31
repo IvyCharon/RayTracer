@@ -82,7 +82,11 @@ impl Object for bvh_node {
                 Some(y) => {
                     let hit_right = self.right.hit(r, t_min, y.t);
                     if let Some(z) = hit_right {
-                        return Option::Some(z);
+                        if z.t < y.t{
+                           return Option::Some(z); 
+                        }else{
+                            return Option::Some(y);
+                        }
                     } else {
                         return Option::Some(y);
                     }
