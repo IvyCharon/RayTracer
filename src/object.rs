@@ -132,32 +132,32 @@ pub struct XYRect {
 }
 
 impl XYRect {
-    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
         Self {
-            mp: e,
-            x0: a,
-            x1: b,
-            y0: c,
-            y1: d,
-            k: f,
+            mp: e_,
+            x0: a_,
+            x1: b_,
+            y0: c_,
+            y1: d_,
+            k: f_,
         }
     }
 }
 
 impl Object for XYRect {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
-        let t = (self.k - r.beg.z) / r.dir.z;
-        if t < t0 || t > t1 {
+        let t_ = (self.k - r.beg.z) / r.dir.z;
+        if t_ < t0 || t_ > t1 {
             return Option::None;
         }
-        let x = r.beg.x + r.dir.x * t;
-        let y = r.beg.y + r.dir.y * t;
+        let x = r.beg.x + r.dir.x * t_;
+        let y = r.beg.y + r.dir.y * t_;
         if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
             return Option::None;
         }
         let outward_normal = Vec3::new(0.0, 0.0, 1.0);
         Option::Some(HitRecord {
-            p: r.at(t),
+            p: r.at(t_),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
                     outward_normal
@@ -165,7 +165,7 @@ impl Object for XYRect {
                     -outward_normal
                 }
             },
-            t: t,
+            t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
             mat: Option::Some(self.mp.clone()),
             u: (x - self.x0) / (self.x1 - self.x0),
@@ -191,32 +191,32 @@ pub struct XZRect {
 }
 
 impl XZRect {
-    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
         Self {
-            mp: e,
-            x0: a,
-            x1: b,
-            z0: c,
-            z1: d,
-            k: f,
+            mp: e_,
+            x0: a_,
+            x1: b_,
+            z0: c_,
+            z1: d_,
+            k: f_,
         }
     }
 }
 
 impl Object for XZRect {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
-        let t = (self.k - r.beg.y) / r.dir.y;
-        if t < t0 || t > t1 {
+        let t_ = (self.k - r.beg.y) / r.dir.y;
+        if t_ < t0 || t_ > t1 {
             return Option::None;
         }
-        let x = r.beg.x + r.dir.x * t;
-        let z = r.beg.z + r.dir.z * t;
+        let x = r.beg.x + r.dir.x * t_;
+        let z = r.beg.z + r.dir.z * t_;
         if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
             return Option::None;
         }
         let outward_normal = Vec3::new(0.0, 1.0, 0.0);
         Option::Some(HitRecord {
-            p: r.at(t),
+            p: r.at(t_),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
                     outward_normal
@@ -224,7 +224,7 @@ impl Object for XZRect {
                     -outward_normal
                 }
             },
-            t: t,
+            t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
             mat: Option::Some(self.mp.clone()),
             u: (x - self.x0) / (self.x1 - self.x0),
@@ -250,32 +250,32 @@ pub struct YZRrect {
 }
 
 impl YZRrect {
-    pub fn new(a: f64, b: f64, c: f64, d: f64, f: f64, e: Arc<dyn Material>) -> Self {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
         Self {
-            mp: e,
-            y0: a,
-            y1: b,
-            z0: c,
-            z1: d,
-            k: f,
+            mp: e_,
+            y0: a_,
+            y1: b_,
+            z0: c_,
+            z1: d_,
+            k: f_,
         }
     }
 }
 
 impl Object for YZRrect {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
-        let t = (self.k - r.beg.x) / r.dir.x;
-        if t < t0 || t > t1 {
+        let t_ = (self.k - r.beg.x) / r.dir.x;
+        if t_ < t0 || t_ > t1 {
             return Option::None;
         }
-        let y = r.beg.y + r.dir.y * t;
-        let z = r.beg.z + r.dir.z * t;
+        let y = r.beg.y + r.dir.y * t_;
+        let z = r.beg.z + r.dir.z * t_;
         if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
             return Option::None;
         }
         let outward_normal = Vec3::new(1.0, 0.0, 0.0);
         Option::Some(HitRecord {
-            p: r.at(t),
+            p: r.at(t_),
             normal: {
                 if (r.dir * outward_normal) < 0.0 {
                     outward_normal
@@ -283,7 +283,7 @@ impl Object for YZRrect {
                     -outward_normal
                 }
             },
-            t: t,
+            t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
             mat: Option::Some(self.mp.clone()),
             u: (y - self.y0) / (self.y1 - self.y0),
