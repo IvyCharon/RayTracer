@@ -34,7 +34,7 @@ const INFINITY: f64 = 1e15;
 
 pub use vec3::Vec3;
 
-fn ray_color(r: Ray, back_ground: Vec3, world: Arc<bvh_node>, depth: i32) -> Vec3 {
+fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
