@@ -7,7 +7,9 @@ mod object;
 use object::Box;
 use object::HitRecord;
 use object::Object;
+use object::RotateY;
 use object::Sphere;
+use object::Translate;
 use object::XYRect;
 use object::XZRect;
 use object::YZRrect;
@@ -69,10 +71,10 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
-    let choose = 1;
+    let choose = 2;
     let world: Arc<dyn Object>;
     let aspect_ratio: f64;
     let image_width: u32;
@@ -89,7 +91,7 @@ fn main() {
             //night
             world = HittableList::night();
             aspect_ratio = 3.0 / 2.0;
-            image_width = 2000;
+            image_width = 400;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(13.0, 2.0, 3.0);

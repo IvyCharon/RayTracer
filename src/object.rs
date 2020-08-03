@@ -5,6 +5,8 @@ use crate::Vec3;
 use crate::AABB;
 use std::sync::Arc;
 
+const INFINITY: f64 = 1e15;
+
 pub trait Object {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self) -> Option<AABB>;
@@ -367,5 +369,138 @@ impl Object for Box {
     }
     fn bounding_box(&self) -> Option<AABB> {
         Option::Some(AABB::new(self.box_min, self.box_max))
+    }
+}
+
+pub struct Translate {
+    pub ptr: Arc<dyn Object>,
+    pub offset: Vec3,
+}
+
+impl Translate {
+    pub fn new(p: Arc<dyn Object>, v: Vec3) -> Self {
+        Self { ptr: p, offset: v }
+    }
+}
+
+impl Object for Translate {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mor = Ray::new(r.beg - self.offset, r.dir);
+        let wmm = self.ptr.hit(mor, t_min, t_max);
+        match wmm {
+            None => None,
+            Some(k) => {
+                let mut ret = k;
+                ret.p += self.offset;
+                Some(ret)
+            }
+        }
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        let tmp = self.ptr.bounding_box();
+        match tmp {
+            None => None,
+            Some(k) => Some(AABB::new(k.min + self.offset, k.max + self.offset)),
+        }
+    }
+}
+
+pub struct RotateY {
+    ptr: Arc<dyn Object>,
+    sin_theta: f64,
+    cos_theta: f64,
+    hasbox: bool,
+    bbox: AABB,
+}
+
+impl RotateY {
+    pub fn new(p: Arc<dyn Object>, angle: f64) -> Self {
+        let radians = angle * std::f64::consts::PI / 180.0;
+
+        let co = radians.cos();
+        let si = radians.sin();
+
+        let get = p.bounding_box();
+        let mut tt = get.unwrap();
+
+        let mi = Vec3::new(INFINITY, INFINITY, INFINITY);
+        let ma = Vec3::new(-INFINITY, -INFINITY, -INFINITY);
+
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = tt.max.x * i as f64 + (1.0 - i as f64) * tt.min.x;
+                    let y = tt.max.y * j as f64 + (1.0 - j as f64) * tt.min.y;
+                    let z = tt.max.z * k as f64 + (1.0 - k as f64) * tt.min.z;
+
+                    let newx = x * co + z * si;
+                    let newz = -si * x + co * z;
+                    let tes = Vec3::new(newx, y, newz);
+
+                    mi.x.min(tes.x);
+                    ma.x.max(tes.x);
+                    mi.y.min(tes.y);
+                    ma.y.max(tes.y);
+                    mi.z.min(tes.z);
+                    ma.z.max(tes.z);
+                }
+            }
+        }
+        tt = AABB::new(mi, ma);
+        Self {
+            ptr: p.clone(),
+            sin_theta: si,
+            cos_theta: co,
+            hasbox: {
+                match get {
+                    None => false,
+                    Some(_w) => true,
+                }
+            },
+            bbox: tt,
+        }
+    }
+}
+
+impl Object for RotateY {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mut ori = r.beg;
+        let mut di = r.dir;
+
+        ori.x = self.cos_theta * r.beg.x - self.sin_theta * r.beg.z;
+        ori.z = self.sin_theta * r.beg.x + self.cos_theta * r.beg.z;
+
+        di.x = self.cos_theta * r.dir.x - self.sin_theta * r.dir.z;
+        di.z = self.sin_theta * r.dir.x + self.cos_theta * r.dir.z;
+
+        let ror = Ray::new(ori, di);
+
+        let ww = self.ptr.hit(ror, t_min, t_max);
+
+        match ww {
+            None => None,
+            Some(k) => {
+                let mut p = k.p;
+                let mut nor = k.normal;
+                p.x = self.cos_theta * k.p.x + self.sin_theta * k.p.z;
+                p.z = -self.sin_theta * k.p.x + self.cos_theta * k.p.z;
+                nor.x = self.cos_theta * k.normal.x + self.sin_theta * k.normal.z;
+                nor.z = -self.sin_theta * k.normal.x + self.cos_theta * k.normal.z;
+
+                let mut ret = k;
+                ret.p = p;
+                ret.normal = nor;
+                Option::Some(ret)
+            }
+        }
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        if self.hasbox {
+            Some(self.bbox)
+        } else {
+            None
+        }
     }
 }

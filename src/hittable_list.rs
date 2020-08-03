@@ -8,8 +8,10 @@ use crate::Lambertian;
 use crate::Metal;
 use crate::Object;
 use crate::Ray;
+use crate::RotateY;
 use crate::SolidColor;
 use crate::Sphere;
+use crate::Translate;
 use crate::Vec3;
 use crate::XYRect;
 use crate::XZRect;
@@ -235,12 +237,7 @@ impl HittableList {
         world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
         world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
         world.add(Arc::new(XZRect::new(
-            213.0,
-            343.0,
-            227.0,
-            332.0,
-            554.0,
-            light.clone(),
+            213.0, 343.0, 227.0, 332.0, 554.0, light,
         )));
         world.add(Arc::new(XZRect::new(
             0.0,
@@ -267,16 +264,23 @@ impl HittableList {
             white.clone(),
         )));
 
-        world.add(Arc::new(Box::new(
-            Vec3::new(130.0, 0.0, 65.0),
-            Vec3::new(295.0, 165.0, 230.0),
-            light,
-        )));
-        world.add(Arc::new(Box::new(
-            Vec3::new(265.0, 0.0, 295.0),
-            Vec3::new(430.0, 330.0, 460.0),
+        let box1 = Arc::new(Box::new(
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(165.0, 330.0, 165.0),
+            white.clone(),
+        ));
+        let rot1 = Arc::new(RotateY::new(box1, 15.0));
+        let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));
+        world.add(ww1);
+
+        let box2 = Arc::new(Box::new(
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(165.0, 165.0, 165.0),
             white,
-        )));
+        ));
+        let rot2 = Arc::new(RotateY::new(box2, -18.0));
+        let ww2 = Arc::new(Translate::new(rot2, Vec3::new(130.0, 0.0, 65.0)));
+        world.add(ww2);
 
         Arc::new(world)
     }
