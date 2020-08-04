@@ -265,7 +265,7 @@ impl Vec3 {
         Vec3::new(r * a.cos(), r * a.sin(), z)
     }
 
-    pub fn _random_in_hemisphere(normal: &Vec3) -> Vec3 {
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere * *normal > 0.0 {
             return in_unit_sphere;

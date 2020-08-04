@@ -11,11 +11,15 @@ pub trait Material {
     fn emitted(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         Vec3::zero()
     }
+    fn scattering_pdf(&self, r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64{
+        0.0
+    }
 }
 
 pub struct ScaRet {
     pub scattered: Ray,
     pub attenustion: Vec3,
+    pub pdf: f64,
     pub jud: bool,
 }
 
@@ -24,6 +28,16 @@ impl ScaRet {
         Self {
             scattered: r,
             attenustion: v,
+            pdf: 0.0,
+            jud: j,
+        }
+    }
+
+    pub fn new_(r: Ray, v: Vec3, p: f64, j: bool) -> Self {
+        Self {
+            scattered: r,
+            attenustion: v,
+            pdf: p,
             jud: j,
         }
     }
@@ -47,12 +61,23 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
-        let sca_dir = rec.normal + Vec3::random_unit_vec();
-        ScaRet::new(
-            Ray::new(rec.p, sca_dir),
+        //let sca_dir = rec.normal + Vec3::random_unit_vec();
+        let dd = Vec3::random_in_hemisphere(&rec.normal);
+        ScaRet::new_(
+            Ray::new(rec.p, dd.unit()),
             self.albedo.value(rec.u, rec.v, rec.p),
+            0.5 / std::f64::consts::PI,
             true,
         )
+    }
+
+    fn scattering_pdf(&self, r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64{
+        let co = rec.normal * (scattered.dir.unit());
+        if co < 0.0 {
+            0.0
+        }else{
+            co / std::f64::consts::PI
+        }
     }
 }
 
@@ -153,6 +178,7 @@ impl Material for DiffuseLight {
         ScaRet {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),
             attenustion: Vec3::zero(),
+            pdf: 0.0,
             jud: false,
         }
     }

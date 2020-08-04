@@ -46,13 +46,13 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
     match rec {
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
-            let emitted = rec.mat.unwrap().emitted(rec.u, rec.v, rec.p);
+            let emitted = rec.mat.as_ref().unwrap().emitted(rec.u, rec.v, rec.p);
             if s.jud {
-                return emitted
-                    + Vec3::elemul(
-                        ray_color(s.scattered, back_ground, world, depth - 1),
-                        s.attenustion,
-                    );
+                let pdf = s.pdf;
+                let albedo = s.attenustion;
+                return emitted + Vec3::elemul(
+                    albedo * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, s.scattered),
+                    ray_color(s.scattered, back_ground, world, depth - 1) / s.pdf);
             }
             emitted
         }
