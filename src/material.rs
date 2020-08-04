@@ -11,7 +11,7 @@ pub trait Material {
     fn emitted(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         Vec3::zero()
     }
-    fn scattering_pdf(&self, r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64{
+    fn scattering_pdf(&self, _r_in: Ray, _rec: &HitRecord, _scattered: Ray) -> f64 {
         0.0
     }
 }
@@ -71,11 +71,11 @@ impl Material for Lambertian {
         )
     }
 
-    fn scattering_pdf(&self, r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64{
+    fn scattering_pdf(&self, _r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64 {
         let co = rec.normal * (scattered.dir.unit());
         if co < 0.0 {
             0.0
-        }else{
+        } else {
             co / std::f64::consts::PI
         }
     }
