@@ -3,6 +3,7 @@ use crate::BvhNode;
 use crate::CheckerTexture;
 use crate::Dielectric;
 use crate::DiffuseLight;
+use crate::FlipFace;
 use crate::HitRecord;
 use crate::Lambertian;
 use crate::Metal;
@@ -236,9 +237,9 @@ impl HittableList {
         let mut world = HittableList::new();
         world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
         world.add(Arc::new(YZRrect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-        world.add(Arc::new(XZRect::new(
+        world.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(
             213.0, 343.0, 227.0, 332.0, 554.0, light,
-        )));
+        )))));
         world.add(Arc::new(XZRect::new(
             0.0,
             555.0,

@@ -9,7 +9,7 @@ extern crate rand;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet;
-    fn emitted(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
+    fn emitted(&self, _rec: &HitRecord, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         Vec3::zero()
     }
     fn scattering_pdf(&self, _r_in: Ray, _rec: &HitRecord, _scattered: Ray) -> f64 {
@@ -184,7 +184,11 @@ impl Material for DiffuseLight {
         }
     }
 
-    fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
-        self.emit.value(u, v, p)
+    fn emitted(&self, rec: &HitRecord, u: f64, v: f64, p: Vec3) -> Vec3 {
+        if rec.front_face {
+            self.emit.value(u, v, p)
+        } else {
+            Vec3::zero()
+        }
     }
 }

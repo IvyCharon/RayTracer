@@ -5,6 +5,7 @@ mod camera;
 use camera::Camera;
 mod object;
 use object::Box;
+use object::FlipFace;
 use object::HitRecord;
 use object::Object;
 use object::RotateY;
@@ -51,7 +52,7 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
     match rec {
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
-            let emitted = rec.mat.as_ref().unwrap().emitted(rec.u, rec.v, rec.p);
+            let emitted = rec.mat.as_ref().unwrap().emitted(&rec, rec.u, rec.v, rec.p);
             let mut rng = rand::thread_rng();
             if s.jud {
                 let albedo = s.attenustion;

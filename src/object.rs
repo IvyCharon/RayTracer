@@ -504,3 +504,30 @@ impl Object for RotateY {
         }
     }
 }
+
+pub struct FlipFace {
+    ptr: Arc<dyn Object>,
+}
+
+impl FlipFace {
+    pub fn new(a: Arc<dyn Object>) -> Self {
+        Self { ptr: a }
+    }
+}
+
+impl Object for FlipFace {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let rec = self.ptr.hit(r, t_min, t_max);
+        match rec {
+            None => None,
+            Some(k) => {
+                let mut p = k;
+                p.front_face = !p.front_face;
+                Some(p)
+            }
+        }
+    }
+    fn bounding_box(&self) -> Option<AABB> {
+        self.ptr.bounding_box()
+    }
+}
