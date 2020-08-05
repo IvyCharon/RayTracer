@@ -244,7 +244,7 @@ impl HittableList {
             555.0,
             0.0,
             555.0,
-            0.0,
+            555.0,
             white.clone(),
         )));
         world.add(Arc::new(XZRect::new(
@@ -252,7 +252,7 @@ impl HittableList {
             555.0,
             0.0,
             555.0,
-            555.0,
+            0.0,
             white.clone(),
         )));
         world.add(Arc::new(XYRect::new(

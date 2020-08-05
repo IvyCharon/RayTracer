@@ -34,10 +34,12 @@ use material::Metal;
 mod onb;
 use onb::Onb;
 
+extern crate rand;
+use rand::Rng;
+
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::sync::Arc;
-extern crate rand;
 
 const INFINITY: f64 = 1e15;
 
@@ -50,17 +52,33 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
             let emitted = rec.mat.as_ref().unwrap().emitted(rec.u, rec.v, rec.p);
+            let mut rng = rand::thread_rng();
             if s.jud {
                 let albedo = s.attenustion;
+                let on_light = Vec3::new(
+                    rng.gen_range(213.0, 343.0),
+                    554.0,
+                    rng.gen_range(227.0, 332.0),
+                );
+                let tto_light = on_light - rec.p;
+                let distance_squared = tto_light.length_squared();
+                let to_light = tto_light.unit();
+                if to_light * rec.normal < 0.0 {
+                    return emitted;
+                }
+
+                let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+                let light_cos = to_light.y;
+                if light_cos < 0.000001 && light_cos > -0.000001 {
+                    return emitted;
+                }
+
+                let pdf = distance_squared / (light_cos * light_area);
+                let scattered = Ray::new(rec.p, to_light);
                 return emitted
                     + Vec3::elemul(
-                        albedo
-                            * rec
-                                .mat
-                                .as_ref()
-                                .unwrap()
-                                .scattering_pdf(r, &rec, s.scattered),
-                        ray_color(s.scattered, back_ground, world, depth - 1) / s.pdf,
+                        albedo * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
+                        ray_color(scattered, back_ground, world, depth - 1) / pdf,
                     );
             }
             emitted
@@ -85,6 +103,7 @@ fn main() {
 
     let choose = 2;
     let world: Arc<dyn Object>;
+    //let lights = HittableList::new();
     let aspect_ratio: f64;
     let image_width: u32;
     let image_height: u32;

@@ -67,7 +67,7 @@ impl Material for Lambertian {
         ScaRet::new_(
             Ray::new(rec.p, direction.unit()),
             self.albedo.value(rec.u, rec.v, rec.p),
-            uvw.w() * direction.unit() / std::f64::consts::PI,
+            uvw.w() * direction / std::f64::consts::PI,
             true,
         )
     }
