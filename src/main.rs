@@ -35,9 +35,10 @@ use material::Metal;
 mod onb;
 use onb::Onb;
 mod pdf;
-use pdf::Pdf;
-//use pdf::CosPdf;
+use pdf::CosPdf;
 use pdf::HittablePdf;
+use pdf::MixturePdf;
+use pdf::Pdf;
 
 //extern crate rand;
 //use rand::Rng;
@@ -67,7 +68,10 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
                     554.0,
                     rec.mat.clone().unwrap(),
                 ));
-                let p = HittablePdf::new(rec.p, light_shape);
+                let p0 = Arc::new(HittablePdf::new(rec.p, light_shape));
+                let p1 = Arc::new(CosPdf::new(rec.normal));
+                let p = MixturePdf::new(p0, p1);
+
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
 
@@ -116,7 +120,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 1000;
     let max_depth = 50;
 
     let choose = 2;
@@ -159,9 +163,13 @@ fn main() {
         }
         2 => {
             //cornell box
+            //let matt = Arc::new(Lambertian::new(Vec3::zero()));
+            //lights.add(Arc::new(XZRect::new(213.0,343.0,227.0,332.0,554.0,matt.clone())));
+            //lights.add(Arc::new(Sphere::new(Vec3::new(190.0,90.0,190.0),90.0,matt)));
+
             world = HittableList::cornell_box();
             aspect_ratio = 1.0;
-            image_width = 600;
+            image_width = 1200;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);

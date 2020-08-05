@@ -13,7 +13,7 @@ pub struct CosPdf {
 }
 
 impl CosPdf {
-    pub fn _new(s: Vec3) -> Self {
+    pub fn new(s: Vec3) -> Self {
         Self {
             uvw: Onb::build_from_w(s),
         }
@@ -53,5 +53,30 @@ impl Pdf for HittablePdf {
 
     fn generate(&self) -> Vec3 {
         self.ptr.random(self.o)
+    }
+}
+
+pub struct MixturePdf {
+    p0: Arc<dyn Pdf>,
+    p1: Arc<dyn Pdf>,
+}
+
+impl MixturePdf {
+    pub fn new(pp0: Arc<dyn Pdf>, pp1: Arc<dyn Pdf>) -> Self {
+        Self { p0: pp0, p1: pp1 }
+    }
+}
+
+impl Pdf for MixturePdf {
+    fn value(&self, dir: Vec3) -> f64 {
+        0.5 * self.p0.value(dir) + 0.5 * self.p1.value(dir)
+    }
+    fn generate(&self) -> Vec3 {
+        let tmp = rand::random::<f64>();
+        if tmp < 0.5 {
+            self.p0.generate()
+        } else {
+            self.p1.generate()
+        }
     }
 }
