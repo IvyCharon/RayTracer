@@ -4,12 +4,22 @@ use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
 use std::sync::Arc;
+extern crate rand;
+use rand::Rng;
 
 const INFINITY: f64 = 1e15;
 
 pub trait Object {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self) -> Option<AABB>;
+
+    fn pdf_value(&self, _o: Vec3, _d: Vec3) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _v: Vec3) -> Vec3 {
+        Vec3::new(1.0, 0.0, 0.0)
+    }
 }
 pub struct HitRecord {
     pub p: Vec3,
@@ -235,6 +245,29 @@ impl Object for XZRect {
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
         ))
+    }
+
+    fn pdf_value(&self, o: Vec3, d: Vec3) -> f64 {
+        let rec = self.hit(Ray::new(o, d), 0.001, INFINITY);
+        match rec {
+            None => 0.0,
+            Some(rec) => {
+                let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+                let dis = rec.t * rec.t * d.length_squared();
+                let co = (d * rec.normal / d.length()).abs();
+                dis / (co * area)
+            }
+        }
+    }
+
+    fn random(&self, v: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let ran = Vec3::new(
+            rng.gen_range(self.x0, self.x1),
+            self.k,
+            rng.gen_range(self.z0, self.z1),
+        );
+        ran - v
     }
 }
 

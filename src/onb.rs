@@ -1,5 +1,6 @@
 use crate::Vec3;
 
+#[derive(Copy, Clone, Debug)]
 pub struct Onb {
     pub axis0: Vec3,
     pub axis1: Vec3,

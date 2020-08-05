@@ -34,9 +34,13 @@ use material::Material;
 use material::Metal;
 mod onb;
 use onb::Onb;
+mod pdf;
+use pdf::Pdf;
+//use pdf::CosPdf;
+use pdf::HittablePdf;
 
-extern crate rand;
-use rand::Rng;
+//extern crate rand;
+//use rand::Rng;
 
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
@@ -53,10 +57,22 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
             let emitted = rec.mat.as_ref().unwrap().emitted(&rec, rec.u, rec.v, rec.p);
-            let mut rng = rand::thread_rng();
+            //let mut rng = rand::thread_rng();
             if s.jud {
+                let light_shape = Arc::new(XZRect::new(
+                    213.0,
+                    343.0,
+                    227.0,
+                    332.0,
+                    554.0,
+                    rec.mat.clone().unwrap(),
+                ));
+                let p = HittablePdf::new(rec.p, light_shape);
+                let scattered = Ray::new(rec.p, p.generate());
+                let pdf_val = p.value(scattered.dir);
+
                 let albedo = s.attenustion;
-                let on_light = Vec3::new(
+                /*let on_light = Vec3::new(
                     rng.gen_range(213.0, 343.0),
                     554.0,
                     rng.gen_range(227.0, 332.0),
@@ -74,12 +90,13 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
                     return emitted;
                 }
 
+
                 let pdf = distance_squared / (light_cos * light_area);
-                let scattered = Ray::new(rec.p, to_light);
+                let scattered = Ray::new(rec.p, to_light);*/
                 return emitted
                     + Vec3::elemul(
                         albedo * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
-                        ray_color(scattered, back_ground, world, depth - 1) / pdf,
+                        ray_color(scattered, back_ground, world, depth - 1) / pdf_val,
                     );
             }
             emitted
