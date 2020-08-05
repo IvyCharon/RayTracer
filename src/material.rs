@@ -1,4 +1,5 @@
 use crate::HitRecord;
+use crate::Onb;
 use crate::Ray;
 use crate::SolidColor;
 use crate::Texture;
@@ -61,12 +62,12 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
-        //let sca_dir = rec.normal + Vec3::random_unit_vec();
-        let dd = Vec3::random_in_hemisphere(&rec.normal);
+        let uvw = Onb::build_from_w(rec.normal);
+        let direction = uvw.local(Vec3::random_cosine_direction());
         ScaRet::new_(
-            Ray::new(rec.p, dd.unit()),
+            Ray::new(rec.p, direction.unit()),
             self.albedo.value(rec.u, rec.v, rec.p),
-            0.5 / std::f64::consts::PI,
+            uvw.w() * direction.unit() / std::f64::consts::PI,
             true,
         )
     }

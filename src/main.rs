@@ -26,13 +26,16 @@ use vec3::Vec3;
 mod hittable_list;
 use hittable_list::HittableList;
 mod material;
-use image::{ImageBuffer, RgbImage};
-use indicatif::ProgressBar;
 use material::Dielectric;
 use material::DiffuseLight;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
+mod onb;
+use onb::Onb;
+
+use image::{ImageBuffer, RgbImage};
+use indicatif::ProgressBar;
 use std::sync::Arc;
 extern crate rand;
 

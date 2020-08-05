@@ -265,7 +265,7 @@ impl Vec3 {
         Vec3::new(r * a.cos(), r * a.sin(), z)
     }
 
-    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
+    pub fn _random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere * *normal > 0.0 {
             return in_unit_sphere;
@@ -281,6 +281,16 @@ impl Vec3 {
                 return p;
             }
         }
+    }
+
+    pub fn random_cosine_direction() -> Vec3 {
+        let r1 = rand::random::<f64>();
+        let r2 = rand::random::<f64>();
+        let z = (1.0 - r2).sqrt();
+        let phi = 2.0 * std::f64::consts::PI * r1;
+        let x = phi.cos() * r2.sqrt();
+        let y = phi.sin() * r2.sqrt();
+        Vec3::new(x, y, z)
     }
 
     pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
