@@ -120,7 +120,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 1000;
+    let samples_per_pixel = 3000;
     let max_depth = 50;
 
     let choose = 2;
