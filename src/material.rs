@@ -1,5 +1,7 @@
+use crate::CosPdf;
 use crate::HitRecord;
-use crate::Onb;
+//use crate::Onb;
+use crate::Pdf;
 use crate::Ray;
 use crate::SolidColor;
 use crate::Texture;
@@ -20,25 +22,28 @@ pub trait Material {
 pub struct ScaRet {
     pub scattered: Ray,
     pub attenustion: Vec3,
-    pub pdf: f64,
+    pub pdf_ptr: Option<Arc<dyn Pdf>>,
+    pub is_specular: bool,
     pub jud: bool,
 }
 
 impl ScaRet {
-    pub fn new(r: Ray, v: Vec3, j: bool) -> Self {
+    pub fn new(r: Ray, v: Vec3, ip: bool, j: bool) -> Self {
         Self {
             scattered: r,
             attenustion: v,
-            pdf: 0.0,
+            pdf_ptr: Option::None,
+            is_specular: ip,
             jud: j,
         }
     }
 
-    pub fn new_(r: Ray, v: Vec3, p: f64, j: bool) -> Self {
+    pub fn _new_(r: Ray, v: Vec3, ip: bool, j: bool) -> Self {
         Self {
             scattered: r,
             attenustion: v,
-            pdf: p,
+            pdf_ptr: Option::None,
+            is_specular: ip,
             jud: j,
         }
     }
@@ -62,14 +67,13 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
-        let uvw = Onb::build_from_w(rec.normal);
-        let direction = uvw.local(Vec3::random_cosine_direction());
-        ScaRet::new_(
-            Ray::new(rec.p, direction.unit()),
-            self.albedo.value(rec.u, rec.v, rec.p),
-            uvw.w() * direction / std::f64::consts::PI,
-            true,
-        )
+        ScaRet {
+            scattered: Ray::new(Vec3::zero(), Vec3::zero()),
+            attenustion: self.albedo.value(rec.u, rec.v, rec.p),
+            pdf_ptr: Option::Some(Arc::new(CosPdf::new(rec.normal))),
+            is_specular: false,
+            jud: true,
+        }
     }
 
     fn scattering_pdf(&self, _r_in: Ray, rec: &HitRecord, scattered: Ray) -> f64 {
@@ -105,9 +109,13 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet {
         let reflected = Vec3::reflect(r_in.dir.unit(), rec.normal);
-        let sca = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
-        let at = self.albedo;
-        ScaRet::new(sca, at, (sca.dir * rec.normal) > 0.0)
+        ScaRet {
+            scattered: Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz),
+            attenustion: self.albedo,
+            pdf_ptr: Option::None,
+            is_specular: true,
+            jud: true,
+        }
     }
 }
 
@@ -146,15 +154,15 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
         if eta * sin_theta > 1.0 {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), false, true);
         }
         let rp = Dielectric::schlick(cos_theta, eta);
         if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), false, true);
         }
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
-        ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true)
+        ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), false, true)
     }
 }
 
@@ -179,7 +187,8 @@ impl Material for DiffuseLight {
         ScaRet {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),
             attenustion: Vec3::zero(),
-            pdf: 0.0,
+            pdf_ptr: Option::None,
+            is_specular: false,
             jud: false,
         }
     }

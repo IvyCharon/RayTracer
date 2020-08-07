@@ -66,6 +66,15 @@ impl Object for HittableList {
         }
         Option::Some(output_box)
     }
+
+    fn pdf_value(&self, o: Vec3, d: Vec3) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+        let mut sum = 0.0;
+        for object in self.objects.iter() {
+            sum += weight * object.pdf_value(o, d);
+        }
+        sum
+    }
 }
 
 impl HittableList {
@@ -265,10 +274,11 @@ impl HittableList {
             white.clone(),
         )));
 
+        let aluminum = Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
         let box1 = Arc::new(Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 330.0, 165.0),
-            white.clone(),
+            aluminum,
         ));
         let rot1 = Arc::new(RotateY::new(box1, 15.0));
         let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));
@@ -284,5 +294,10 @@ impl HittableList {
         world.add(ww2);
 
         Arc::new(world)
+    }
+
+    pub fn _random(&self, o: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        self.objects[rng.gen_range(0, self.num - 1)].random(o)
     }
 }

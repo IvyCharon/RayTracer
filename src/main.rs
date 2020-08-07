@@ -49,7 +49,13 @@ use std::sync::Arc;
 
 const INFINITY: f64 = 1e15;
 
-fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> Vec3 {
+fn ray_color(
+    r: Ray,
+    back_ground: Vec3,
+    lights: Arc<dyn Object>,
+    world: Arc<dyn Object>,
+    depth: i32,
+) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::zero();
@@ -58,50 +64,27 @@ fn ray_color(r: Ray, back_ground: Vec3, world: Arc<dyn Object>, depth: i32) -> V
         Option::Some(rec) => {
             let s = rec.mat.as_ref().unwrap().scatter(r, &rec);
             let emitted = rec.mat.as_ref().unwrap().emitted(&rec, rec.u, rec.v, rec.p);
-            //let mut rng = rand::thread_rng();
             if s.jud {
-                let light_shape = Arc::new(XZRect::new(
-                    213.0,
-                    343.0,
-                    227.0,
-                    332.0,
-                    554.0,
-                    rec.mat.clone().unwrap(),
-                ));
-                let p0 = Arc::new(HittablePdf::new(rec.p, light_shape));
-                let p1 = Arc::new(CosPdf::new(rec.normal));
-                let p = MixturePdf::new(p0, p1);
+                if s.is_specular {
+                    return Vec3::elemul(
+                        s.attenustion,
+                        ray_color(s.scattered, back_ground, lights, world, depth - 1),
+                    );
+                }
+                let light_ptr = Arc::new(HittablePdf::new(rec.p, lights.clone()));
+                let p = MixturePdf::new(light_ptr, s.pdf_ptr.unwrap());
 
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
 
-                let albedo = s.attenustion;
-                /*let on_light = Vec3::new(
-                    rng.gen_range(213.0, 343.0),
-                    554.0,
-                    rng.gen_range(227.0, 332.0),
-                );
-                let tto_light = on_light - rec.p;
-                let distance_squared = tto_light.length_squared();
-                let to_light = tto_light.unit();
-                if to_light * rec.normal < 0.0 {
-                    return emitted;
-                }
-
-                let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-                let light_cos = to_light.y;
-                if light_cos < 0.000001 && light_cos > -0.000001 {
-                    return emitted;
-                }
-
-
-                let pdf = distance_squared / (light_cos * light_area);
-                let scattered = Ray::new(rec.p, to_light);*/
-                return emitted
+                let k = emitted
                     + Vec3::elemul(
-                        albedo * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
-                        ray_color(scattered, back_ground, world, depth - 1) / pdf_val,
+                        s.attenustion
+                            * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
+                        ray_color(scattered, back_ground, world, lights.clone(), depth - 1)
+                            / pdf_val,
                     );
+                return k;
             }
             emitted
         }
@@ -120,12 +103,12 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 3000;
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
     let choose = 2;
     let world: Arc<dyn Object>;
-    //let lights = HittableList::new();
+    let mut lights = HittableList::new();
     let aspect_ratio: f64;
     let image_width: u32;
     let image_height: u32;
@@ -163,13 +146,25 @@ fn main() {
         }
         2 => {
             //cornell box
-            //let matt = Arc::new(Lambertian::new(Vec3::zero()));
-            //lights.add(Arc::new(XZRect::new(213.0,343.0,227.0,332.0,554.0,matt.clone())));
-            //lights.add(Arc::new(Sphere::new(Vec3::new(190.0,90.0,190.0),90.0,matt)));
+            let matt = Arc::new(Lambertian::new(Vec3::zero()));
+            lights.add(Arc::new(XZRect::new(
+                213.0,
+                343.0,
+                227.0,
+                332.0,
+                554.0,
+                matt,
+            )));
+
+            /*lights.add(Arc::new(Sphere::new(
+                Vec3::new(190.0, 90.0, 190.0),
+                90.0,
+                matt,
+            )));*/
 
             world = HittableList::cornell_box();
             aspect_ratio = 1.0;
-            image_width = 1200;
+            image_width = 500;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
@@ -214,7 +209,7 @@ fn main() {
             );
         }
     }
-
+    let ll: Arc<dyn Object> = Arc::new(lights);
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
     let bar = ProgressBar::new(image_height as u64);
 
@@ -226,7 +221,7 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, background, world.clone(), max_depth);
+                col += ray_color(r, background, ll.clone(), world.clone(), max_depth);
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([

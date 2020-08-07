@@ -425,6 +425,13 @@ impl Object for Translate {
             Some(k) => {
                 let mut ret = k;
                 ret.p += self.offset;
+                ret.normal = {
+                    if mor.dir * ret.normal < 0.0 {
+                        ret.normal
+                    } else {
+                        -ret.normal
+                    }
+                };
                 Some(ret)
             }
         }
@@ -523,7 +530,13 @@ impl Object for RotateY {
 
                 let mut ret = k;
                 ret.p = p;
-                ret.normal = nor;
+                ret.normal = {
+                    if ror.dir * nor < 0.0 {
+                        nor
+                    } else {
+                        -nor
+                    }
+                };
                 Option::Some(ret)
             }
         }
