@@ -153,7 +153,7 @@ fn main() {
                 227.0,
                 332.0,
                 554.0,
-                matt,
+                matt.clone(),
             )));
 
             /*lights.add(Arc::new(Sphere::new(

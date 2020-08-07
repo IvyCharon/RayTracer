@@ -75,6 +75,15 @@ impl Object for HittableList {
         }
         sum
     }
+
+    fn random(&self, o: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        if self.num == 1 {
+            return self.objects[0].random(o);
+        }
+        self.objects[rng.gen_range(0, self.num - 1)].random(o)
+    }
+
 }
 
 impl HittableList {
@@ -296,8 +305,5 @@ impl HittableList {
         Arc::new(world)
     }
 
-    pub fn _random(&self, o: Vec3) -> Vec3 {
-        let mut rng = rand::thread_rng();
-        self.objects[rng.gen_range(0, self.num - 1)].random(o)
-    }
+    
 }
