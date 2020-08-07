@@ -14,11 +14,11 @@ pub trait Object {
     fn bounding_box(&self) -> Option<AABB>;
 
     fn pdf_value(&self, _o: Vec3, _d: Vec3) -> f64 {
-        0.0
+        panic!("unimplemented!")
     }
 
     fn random(&self, _v: Vec3) -> Vec3 {
-        Vec3::new(1.0, 0.0, 0.0)
+        panic!("unimplemented!")
     }
 }
 pub struct HitRecord {
@@ -187,6 +187,29 @@ impl Object for XYRect {
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
         ))
     }
+
+    fn pdf_value(&self, o: Vec3, d: Vec3) -> f64 {
+        let rec = self.hit(Ray::new(o, d), 0.001, INFINITY);
+        match rec {
+            None => 0.0,
+            Some(rec) => {
+                let area = (self.x1 - self.x0) * (self.y1 - self.y0);
+                let dis = rec.t * rec.t * d.length_squared();
+                let co = (d * rec.normal / d.length()).abs();
+                dis / (co * area)
+            }
+        }
+    }
+
+    fn random(&self, v: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let ran = Vec3::new(
+            rng.gen_range(self.x0, self.x1),
+            self.k,
+            rng.gen_range(self.y0, self.y1),
+        );
+        ran - v
+    }
 }
 
 pub struct XZRect {
@@ -327,6 +350,29 @@ impl Object for YZRrect {
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
         ))
+    }
+
+    fn pdf_value(&self, o: Vec3, d: Vec3) -> f64 {
+        let rec = self.hit(Ray::new(o, d), 0.001, INFINITY);
+        match rec {
+            None => 0.0,
+            Some(rec) => {
+                let area = (self.y1 - self.y0) * (self.z1 - self.z0);
+                let dis = rec.t * rec.t * d.length_squared();
+                let co = (d * rec.normal / d.length()).abs();
+                dis / (co * area)
+            }
+        }
+    }
+
+    fn random(&self, v: Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let ran = Vec3::new(
+            rng.gen_range(self.y0, self.y1),
+            self.k,
+            rng.gen_range(self.z0, self.z1),
+        );
+        ran - v
     }
 }
 

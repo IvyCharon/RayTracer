@@ -78,22 +78,14 @@ impl Object for HittableList {
 
     fn random(&self, o: Vec3) -> Vec3 {
         let mut rng = rand::thread_rng();
-        if self.num == 1 {
-            return self.objects[0].random(o);
-        }
-        self.objects[rng.gen_range(0, self.num - 1)].random(o)
+        self.objects[rng.gen_range(0, self.objects.len())].random(o)
     }
-
 }
 
 impl HittableList {
     pub fn new() -> Self {
         Self {
-            objects: vec![Arc::new(Sphere {
-                center: Vec3::new(0.0, 0.0, 0.0),
-                radius: 0.0,
-                mat: Arc::new(Lambertian::new(Vec3::new(0.0, 0.0, 0.0))),
-            })],
+            objects: vec![],
             num: 0,
         }
     }
@@ -304,6 +296,4 @@ impl HittableList {
 
         Arc::new(world)
     }
-
-    
 }

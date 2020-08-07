@@ -32,6 +32,7 @@ use material::DiffuseLight;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
+use material::NoMaterial;
 mod onb;
 use onb::Onb;
 mod pdf;
@@ -77,14 +78,13 @@ fn ray_color(
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
 
-                let k = emitted
+                return emitted
                     + Vec3::elemul(
                         s.attenustion
                             * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
-                        ray_color(scattered, back_ground, world, lights.clone(), depth - 1)
+                        ray_color(scattered, back_ground, lights.clone(), world, depth - 1)
                             / pdf_val,
                     );
-                return k;
             }
             emitted
         }
@@ -146,14 +146,13 @@ fn main() {
         }
         2 => {
             //cornell box
-            let matt = Arc::new(Lambertian::new(Vec3::zero()));
             lights.add(Arc::new(XZRect::new(
                 213.0,
                 343.0,
                 227.0,
                 332.0,
                 554.0,
-                matt.clone(),
+                Arc::new(NoMaterial),
             )));
 
             /*lights.add(Arc::new(Sphere::new(
