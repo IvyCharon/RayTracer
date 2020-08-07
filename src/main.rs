@@ -74,8 +74,7 @@ fn ray_color(
                 }
 
                 let light_ptr = Arc::new(HittablePdf::new(rec.p, lights.clone()));
-                // let p = MixturePdf::new(light_ptr, s.pdf_ptr.unwrap());
-                let p = s.pdf_ptr.unwrap();
+                let p = MixturePdf::new(light_ptr, s.pdf_ptr.unwrap());
 
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
@@ -211,6 +210,7 @@ fn main() {
             );
         }
     }
+    
     let ll: Arc<dyn Object> = Arc::new(lights);
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
     let bar = ProgressBar::new(image_height as u64);
