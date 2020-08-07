@@ -201,3 +201,16 @@ impl Material for DiffuseLight {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct NoMaterial;
+
+impl Material for NoMaterial {
+    fn scatter(&self, _r_in: Ray, _rec: &HitRecord) -> ScaRet {
+        panic!("no material")
+    }
+
+    fn emitted(&self, rec: &HitRecord, u: f64, v: f64, p: Vec3) -> Vec3 {
+        panic!("no material")
+    }
+}

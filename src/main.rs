@@ -32,6 +32,7 @@ use material::DiffuseLight;
 use material::Lambertian;
 use material::Material;
 use material::Metal;
+use material::NoMaterial;
 mod onb;
 use onb::Onb;
 mod pdf;
@@ -71,19 +72,21 @@ fn ray_color(
                         ray_color(s.scattered, back_ground, lights, world, depth - 1),
                     );
                 }
+
                 let light_ptr = Arc::new(HittablePdf::new(rec.p, lights.clone()));
-                let p = MixturePdf::new(light_ptr, s.pdf_ptr.unwrap());
+                // let p = MixturePdf::new(light_ptr, s.pdf_ptr.unwrap());
+                let p = s.pdf_ptr.unwrap();
 
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
-
+                let mat_pdf = rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered);
+                
                 let k = emitted
                     + Vec3::elemul(
-                        s.attenustion
-                            * rec.mat.as_ref().unwrap().scattering_pdf(r, &rec, scattered),
-                        ray_color(scattered, back_ground, world, lights.clone(), depth - 1)
+                        s.attenustion,
+                        ray_color(scattered, back_ground, lights.clone(), world , depth - 1)
                             / pdf_val,
-                    );
+                    ) * mat_pdf;
                 return k;
             }
             emitted
@@ -103,7 +106,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 32;
     let max_depth = 50;
 
     let choose = 2;
@@ -146,14 +149,13 @@ fn main() {
         }
         2 => {
             //cornell box
-            let matt = Arc::new(Lambertian::new(Vec3::zero()));
             lights.add(Arc::new(XZRect::new(
                 213.0,
                 343.0,
                 227.0,
                 332.0,
                 554.0,
-                matt.clone(),
+                Arc::new(NoMaterial),
             )));
 
             /*lights.add(Arc::new(Sphere::new(
@@ -164,7 +166,7 @@ fn main() {
 
             world = HittableList::cornell_box();
             aspect_ratio = 1.0;
-            image_width = 500;
+            image_width = 100;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
