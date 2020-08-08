@@ -275,24 +275,32 @@ impl HittableList {
             white.clone(),
         )));
 
-        let aluminum = Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
+        //let aluminum = Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
         let box1 = Arc::new(Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 330.0, 165.0),
-            aluminum,
+            //aluminum,
+            white,
         ));
         let rot1 = Arc::new(RotateY::new(box1, 15.0));
         let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));
         world.add(ww1);
 
-        let box2 = Arc::new(Box::new(
+        let glass_sphere = Arc::new(Sphere::new(
+            Vec3::new(190.0, 90.0, 190.0),
+            90.0,
+            Arc::new(Dielectric::new(1.5)),
+        ));
+        world.add(glass_sphere);
+
+        /*let box2 = Arc::new(Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 165.0, 165.0),
             white,
         ));
         let rot2 = Arc::new(RotateY::new(box2, -18.0));
         let ww2 = Arc::new(Translate::new(rot2, Vec3::new(130.0, 0.0, 65.0)));
-        world.add(ww2);
+        world.add(ww2);*/
 
         Arc::new(world)
     }

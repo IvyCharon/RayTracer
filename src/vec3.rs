@@ -283,6 +283,18 @@ impl Vec3 {
         }
     }
 
+    pub fn random_to_sphere(radius: f64, dis_sq: f64) -> Vec3 {
+        let r1 = rand::random::<f64>();
+        let r2 = rand::random::<f64>();
+        let z = 1.0 + r2 * ((1.0 - radius * radius / dis_sq).sqrt() - 1.0);
+
+        let phi = 2.0 * r1 * std::f64::consts::PI;
+        let x = phi.cos() * (1.0 - z * z).sqrt();
+        let y = phi.sin() * (1.0 - z * z).sqrt();
+
+        Vec3::new(x, y, z)
+    }
+
     pub fn random_cosine_direction() -> Vec3 {
         let r1 = rand::random::<f64>();
         let r2 = rand::random::<f64>();

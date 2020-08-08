@@ -166,15 +166,15 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
         if eta * sin_theta > 1.0 {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), false, true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true, true);
         }
         let rp = Dielectric::schlick(cos_theta, eta);
         if rand::random::<f64>() < rp {
             let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
-            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), false, true);
+            return ScaRet::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true, true);
         }
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
-        ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), false, true)
+        ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true, true)
     }
 }
 

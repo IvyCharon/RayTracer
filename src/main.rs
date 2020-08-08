@@ -103,12 +103,25 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 1000;
     let max_depth = 50;
 
     let choose = 2;
     let world: Arc<dyn Object>;
-    let mut lights = HittableList::new();
+    let lights = Arc::new(XZRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        Arc::new(NoMaterial),
+    ));
+    let glass_sphere = Arc::new(Sphere::new(
+        Vec3::new(190.0, 90.0, 190.0),
+        90.0,
+        Arc::new(NoMaterial),
+    ));
+    let mut ll = HittableList::new();
     let aspect_ratio: f64;
     let image_width: u32;
     let image_height: u32;
@@ -146,24 +159,12 @@ fn main() {
         }
         2 => {
             //cornell box
-            lights.add(Arc::new(XZRect::new(
-                213.0,
-                343.0,
-                227.0,
-                332.0,
-                554.0,
-                Arc::new(NoMaterial),
-            )));
-
-            /*lights.add(Arc::new(Sphere::new(
-                Vec3::new(190.0, 90.0, 190.0),
-                90.0,
-                matt,
-            )));*/
+            ll.add(lights);
+            ll.add(glass_sphere);
 
             world = HittableList::cornell_box();
             aspect_ratio = 1.0;
-            image_width = 500;
+            image_width = 700;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
@@ -208,7 +209,7 @@ fn main() {
             );
         }
     }
-    let ll: Arc<dyn Object> = Arc::new(lights);
+    let li = Arc::new(ll);
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
     let bar = ProgressBar::new(image_height as u64);
 
@@ -220,7 +221,7 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, background, ll.clone(), world.clone(), max_depth);
+                col += ray_color(r, background, li.clone(), world.clone(), max_depth);
             }
             let pixel = img.get_pixel_mut(i, j);
             *pixel = image::Rgb([

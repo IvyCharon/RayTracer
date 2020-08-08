@@ -1,5 +1,6 @@
 use crate::HittableList;
 use crate::Material;
+use crate::Onb;
 use crate::Ray;
 use crate::Vec3;
 use crate::AABB;
@@ -127,6 +128,26 @@ impl Object for Sphere {
             self.center - Vec3::new(self.radius, self.radius, self.radius),
             self.center + Vec3::new(self.radius, self.radius, self.radius),
         ))
+    }
+
+    fn pdf_value(&self, o: Vec3, d: Vec3) -> f64 {
+        let rec = self.hit(Ray::new(o, d), 0.001, INFINITY);
+        match rec {
+            None => 0.0,
+            Some(_r) => {
+                let cotma =
+                    (1.0 - self.radius * self.radius / ((self.center - o).length_squared())).sqrt();
+                let solid_ang = 2.0 * std::f64::consts::PI * (1.0 - cotma);
+                1.0 / solid_ang
+            }
+        }
+    }
+
+    fn random(&self, v: Vec3) -> Vec3 {
+        let di = self.center - v;
+        let dis_sq = di.length_squared();
+        let uvw = Onb::build_from_w(di);
+        uvw.local(Vec3::random_to_sphere(self.radius, dis_sq))
     }
 }
 
