@@ -224,6 +224,15 @@ fn main() {
                 col += ray_color(r, background, li.clone(), world.clone(), max_depth);
             }
             let pixel = img.get_pixel_mut(i, j);
+            if col.x.is_nan() {
+                col.x = 0.0;
+            }
+            if col.y.is_nan() {
+                col.y = 0.0;
+            }
+            if col.z.is_nan() {
+                col.z = 0.0;
+            }
             *pixel = image::Rgb([
                 (clamp((col.x / (samples_per_pixel as f64)).sqrt(), 0.0, 0.999) * 255.999) as u8,
                 (clamp((col.y / (samples_per_pixel as f64)).sqrt(), 0.0, 255.999) * 255.999) as u8,
