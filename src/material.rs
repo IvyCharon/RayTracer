@@ -1,12 +1,9 @@
 use crate::CosPdf;
 use crate::HitRecord;
-//use crate::Onb;
 use crate::Pdf;
 use crate::Ray;
-use crate::SolidColor;
 use crate::Texture;
 use crate::Vec3;
-use std::sync::Arc;
 extern crate rand;
 
 pub trait Material {
@@ -22,7 +19,7 @@ pub trait Material {
 pub struct ScaRet {
     pub scattered: Ray,
     pub attenustion: Vec3,
-    pub pdf_ptr: Option<Arc<dyn Pdf>>,
+    pub pdf_ptr: Option<Box<dyn Pdf>>,
     pub is_specular: bool,
     pub jud: bool,
 }
@@ -49,6 +46,7 @@ impl ScaRet {
     }
 }
 
+#[derive(Clone, Debug, Copy)]
 pub struct NoMaterial;
 
 impl Material for NoMaterial {
@@ -61,28 +59,23 @@ impl Material for NoMaterial {
     }
 }
 
-pub struct Lambertian {
-    pub albedo: Arc<dyn Texture>,
+#[derive(Clone, Debug, Copy)]
+pub struct Lambertian<T: Texture> {
+    pub albedo: T,
 }
 
-impl Lambertian {
-    pub fn new(v: Vec3) -> Self {
-        Lambertian {
-            albedo: Arc::new(SolidColor::new(v)),
-        }
-    }
-
-    pub fn new_(v: Arc<dyn Texture>) -> Self {
+impl<T: Texture> Lambertian<T> {
+    pub fn new(v: T) -> Self {
         Lambertian { albedo: v }
     }
 }
 
-impl Material for Lambertian {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet {
         ScaRet {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),
             attenustion: self.albedo.value(rec.u, rec.v, rec.p),
-            pdf_ptr: Option::Some(Arc::new(CosPdf::new(rec.normal))),
+            pdf_ptr: Option::Some(Box::new(CosPdf::new(rec.normal))),
             is_specular: false,
             jud: true,
         }
@@ -98,6 +91,7 @@ impl Material for Lambertian {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Metal {
     pub albedo: Vec3,
     pub fuzz: f64,
@@ -131,6 +125,7 @@ impl Material for Metal {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Dielectric {
     pub ref_idx: f64,
 }
@@ -178,23 +173,18 @@ impl Material for Dielectric {
     }
 }
 
-pub struct DiffuseLight {
-    pub emit: Arc<dyn Texture>,
+#[derive(Clone, Debug)]
+pub struct DiffuseLight<T: Texture> {
+    pub emit: T,
 }
 
-impl DiffuseLight {
-    pub fn new(m: Arc<dyn Texture>) -> Self {
+impl<T: Texture> DiffuseLight<T> {
+    pub fn new(m: T) -> Self {
         Self { emit: m }
     }
-
-    pub fn new_(p: Vec3) -> Self {
-        Self {
-            emit: Arc::new(SolidColor::new(p)),
-        }
-    }
 }
 
-impl Material for DiffuseLight {
+impl<T: Texture> Material for DiffuseLight<T> {
     fn scatter(&self, _r_in: Ray, _rec: &HitRecord) -> ScaRet {
         ScaRet {
             scattered: Ray::new(Vec3::zero(), Vec3::zero()),

@@ -22,17 +22,17 @@ pub trait Object {
         panic!("unimplemented!")
     }
 }
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Vec3,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat: Option<Arc<dyn Material>>,
+    pub mat: Option<&'a dyn Material>,
     pub u: f64,
     pub v: f64,
 }
 
-impl HitRecord {
+impl<'a> HitRecord<'a> {
     pub fn get_sphere_uv(p: Vec3) -> UV {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
@@ -53,14 +53,14 @@ impl UV {
     }
 }
 
-pub struct Sphere {
+pub struct Sphere<T: Material> {
     pub center: Vec3,
     pub radius: f64,
-    pub mat: Arc<dyn Material>,
+    pub mat: T,
 }
 
-impl Sphere {
-    pub fn new(v: Vec3, r: f64, m: Arc<dyn Material>) -> Self {
+impl<T: Material> Sphere<T> {
+    pub fn new(v: Vec3, r: f64, m: T) -> Self {
         Self {
             center: v,
             radius: r,
@@ -69,7 +69,7 @@ impl Sphere {
     }
 }
 
-impl Object for Sphere {
+impl<T: Material> Object for Sphere<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.beg - self.center;
         let a = r.dir.length_squared();
@@ -94,7 +94,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp,
                     front_face: k,
-                    mat: Option::Some(self.mat.clone()),
+                    mat: Option::Some(&self.mat),
                     u: uv_.u,
                     v: uv_.v,
                 });
@@ -114,7 +114,7 @@ impl Object for Sphere {
                     normal: tmpp,
                     t: temp,
                     front_face: k,
-                    mat: Option::Some(self.mat.clone()),
+                    mat: Option::Some(&self.mat),
                     u: uv_.u,
                     v: uv_.v,
                 });
@@ -151,8 +151,9 @@ impl Object for Sphere {
     }
 }
 
-pub struct XYRect {
-    mp: Arc<dyn Material>,
+#[derive(Clone, Debug, Copy)]
+pub struct XYRect<T: Material> {
+    mp: T,
     x0: f64,
     x1: f64,
     y0: f64,
@@ -160,8 +161,8 @@ pub struct XYRect {
     k: f64,
 }
 
-impl XYRect {
-    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
+impl<T: Material> XYRect<T> {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: T) -> Self {
         Self {
             mp: e_,
             x0: a_,
@@ -173,7 +174,7 @@ impl XYRect {
     }
 }
 
-impl Object for XYRect {
+impl<T: Material> Object for XYRect<T> {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t_ = (self.k - r.beg.z) / r.dir.z;
         if t_ < t0 || t_ > t1 {
@@ -196,7 +197,7 @@ impl Object for XYRect {
             },
             t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
-            mat: Option::Some(self.mp.clone()),
+            mat: Option::Some(&self.mp),
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (y - self.y0) / (self.y1 - self.y0),
         })
@@ -233,8 +234,9 @@ impl Object for XYRect {
     }
 }
 
-pub struct XZRect {
-    mp: Arc<dyn Material>,
+#[derive(Clone, Debug, Copy)]
+pub struct XZRect<T: Material> {
+    mp: T,
     x0: f64,
     x1: f64,
     z0: f64,
@@ -242,8 +244,8 @@ pub struct XZRect {
     k: f64,
 }
 
-impl XZRect {
-    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
+impl<T: Material> XZRect<T> {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: T) -> Self {
         Self {
             mp: e_,
             x0: a_,
@@ -255,7 +257,7 @@ impl XZRect {
     }
 }
 
-impl Object for XZRect {
+impl<T: Material> Object for XZRect<T> {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t_ = (self.k - r.beg.y) / r.dir.y;
         if t_ < t0 || t_ > t1 {
@@ -278,7 +280,7 @@ impl Object for XZRect {
             },
             t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
-            mat: Option::Some(self.mp.clone()),
+            mat: Option::Some(&self.mp),
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (z - self.z0) / (self.z1 - self.z0),
         })
@@ -315,8 +317,9 @@ impl Object for XZRect {
     }
 }
 
-pub struct YZRrect {
-    mp: Arc<dyn Material>,
+#[derive(Clone, Debug, Copy)]
+pub struct YZRrect<T: Material> {
+    mp: T,
     y0: f64,
     y1: f64,
     z0: f64,
@@ -324,8 +327,8 @@ pub struct YZRrect {
     k: f64,
 }
 
-impl YZRrect {
-    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: Arc<dyn Material>) -> Self {
+impl<T: Material> YZRrect<T> {
+    pub fn new(a_: f64, b_: f64, c_: f64, d_: f64, f_: f64, e_: T) -> Self {
         Self {
             mp: e_,
             y0: a_,
@@ -337,7 +340,7 @@ impl YZRrect {
     }
 }
 
-impl Object for YZRrect {
+impl<T: Material> Object for YZRrect<T> {
     fn hit(&self, r: Ray, t0: f64, t1: f64) -> Option<HitRecord> {
         let t_ = (self.k - r.beg.x) / r.dir.x;
         if t_ < t0 || t_ > t1 {
@@ -360,7 +363,7 @@ impl Object for YZRrect {
             },
             t: t_,
             front_face: (r.dir * outward_normal) < 0.0,
-            mat: Option::Some(self.mp.clone()),
+            mat: Option::Some(&self.mp),
             u: (y - self.y0) / (self.y1 - self.y0),
             v: (z - self.z0) / (self.z1 - self.z0),
         })
@@ -404,7 +407,7 @@ pub struct Box {
 }
 
 impl Box {
-    pub fn new(mi: Vec3, ma: Vec3, p: Arc<dyn Material>) -> Self {
+    pub fn new<U: Material + Clone + 'static>(mi: Vec3, ma: Vec3, p: U) -> Self {
         let mut wor = HittableList::new();
         wor.add(Arc::new(XYRect::new(
             mi.x,
@@ -472,18 +475,18 @@ impl Object for Box {
     }
 }
 
-pub struct Translate {
-    pub ptr: Arc<dyn Object>,
+pub struct Translate<T: Object> {
+    pub ptr: T,
     pub offset: Vec3,
 }
 
-impl Translate {
-    pub fn new(p: Arc<dyn Object>, v: Vec3) -> Self {
+impl<T: Object> Translate<T> {
+    pub fn new(p: T, v: Vec3) -> Self {
         Self { ptr: p, offset: v }
     }
 }
 
-impl Object for Translate {
+impl<T: Object> Object for Translate<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mor = Ray::new(r.beg - self.offset, r.dir);
         let wmm = self.ptr.hit(mor, t_min, t_max);
@@ -513,16 +516,16 @@ impl Object for Translate {
     }
 }
 
-pub struct RotateY {
-    ptr: Arc<dyn Object>,
+pub struct RotateY<T: Object> {
+    ptr: T,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
     bbox: AABB,
 }
 
-impl RotateY {
-    pub fn new(p: Arc<dyn Object>, angle: f64) -> Self {
+impl<T: Object> RotateY<T> {
+    pub fn new(p: T, angle: f64) -> Self {
         let radians = angle * std::f64::consts::PI / 180.0;
 
         let co = radians.cos();
@@ -556,7 +559,7 @@ impl RotateY {
         }
         tt = AABB::new(mi, ma);
         Self {
-            ptr: p.clone(),
+            ptr: p,
             sin_theta: si,
             cos_theta: co,
             hasbox: {
@@ -570,7 +573,7 @@ impl RotateY {
     }
 }
 
-impl Object for RotateY {
+impl<T: Object> Object for RotateY<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut ori = r.beg;
         let mut di = r.dir;
@@ -618,17 +621,17 @@ impl Object for RotateY {
     }
 }
 
-pub struct FlipFace {
-    ptr: Arc<dyn Object>,
+pub struct FlipFace<T: Object> {
+    ptr: T,
 }
 
-impl FlipFace {
-    pub fn new(a: Arc<dyn Object>) -> Self {
+impl<T: Object> FlipFace<T> {
+    pub fn new(a: T) -> Self {
         Self { ptr: a }
     }
 }
 
-impl Object for FlipFace {
+impl<T: Object> Object for FlipFace<T> {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let rec = self.ptr.hit(r, t_min, t_max);
         match rec {

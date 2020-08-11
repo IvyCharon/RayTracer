@@ -1,11 +1,11 @@
 use crate::Vec3;
-use std::sync::Arc;
 
 pub trait Texture {
     fn color(&self, u: f64, v: f64, p: Vec3) -> Vec3;
     fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3;
 }
 
+#[derive(Clone, Debug)]
 pub struct SolidColor {
     color: Vec3,
 }
@@ -26,21 +26,19 @@ impl Texture for SolidColor {
     }
 }
 
-pub struct CheckerTexture {
-    pub odd: Arc<dyn Texture>,
-    pub even: Arc<dyn Texture>,
+#[derive(Clone, Debug)]
+pub struct CheckerTexture<T: Texture> {
+    pub odd: T,
+    pub even: T,
 }
 
-impl CheckerTexture {
-    pub fn new(a: Vec3, b: Vec3) -> Self {
-        Self {
-            odd: Arc::new(SolidColor::new(a)),
-            even: Arc::new(SolidColor::new(b)),
-        }
+impl<T: Texture> CheckerTexture<T> {
+    pub fn new(a: T, b: T) -> Self {
+        Self { odd: a, even: b }
     }
 }
 
-impl Texture for CheckerTexture {
+impl<T: Texture> Texture for CheckerTexture<T> {
     fn color(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
         if sines < 0.0 {

@@ -1,7 +1,6 @@
 use crate::Object;
 use crate::Onb;
 use crate::Vec3;
-use std::sync::Arc;
 
 pub trait Pdf {
     fn value(&self, dir: Vec3) -> f64;
@@ -35,18 +34,18 @@ impl Pdf for CosPdf {
     }
 }
 
-pub struct HittablePdf {
+pub struct HittablePdf<T: Object> {
     o: Vec3,
-    ptr: Arc<dyn Object>,
+    ptr: T,
 }
 
-impl HittablePdf {
-    pub fn new(oo: Vec3, p: Arc<dyn Object>) -> Self {
+impl<'a, T: Object> HittablePdf<T> {
+    pub fn new(oo: Vec3, p: T) -> Self {
         Self { o: oo, ptr: p }
     }
 }
 
-impl Pdf for HittablePdf {
+impl<T: Object> Pdf for HittablePdf<T> {
     fn value(&self, dir: Vec3) -> f64 {
         self.ptr.pdf_value(self.o, dir)
     }
@@ -56,18 +55,18 @@ impl Pdf for HittablePdf {
     }
 }
 
-pub struct MixturePdf {
-    p0: Arc<dyn Pdf>,
-    p1: Arc<dyn Pdf>,
+pub struct MixturePdf<'a, T: Pdf> {
+    p0: T,
+    p1: &'a dyn Pdf,
 }
 
-impl MixturePdf {
-    pub fn new(pp0: Arc<dyn Pdf>, pp1: Arc<dyn Pdf>) -> Self {
+impl<'a, T: Pdf> MixturePdf<'a, T> {
+    pub fn new(pp0: T, pp1: &'a dyn Pdf) -> Self {
         Self { p0: pp0, p1: pp1 }
     }
 }
 
-impl Pdf for MixturePdf {
+impl<'a, T: Pdf> Pdf for MixturePdf<'a, T> {
     fn value(&self, dir: Vec3) -> f64 {
         0.5 * self.p0.value(dir) + 0.5 * self.p1.value(dir)
     }
