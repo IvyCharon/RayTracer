@@ -154,7 +154,7 @@ impl HittableList {
 
         let mat3 = Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0);
         world.add(Arc::new(Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, mat3)));
-        
+
         //world
         BvhNode::new(world, 0.001, INFINITY)
     }
@@ -274,7 +274,7 @@ impl HittableList {
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 330.0, 165.0),
             //aluminum,
-            white//.clone(),
+            white,
         );
         let rot1 = RotateY::new(box1, 15.0);
         let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));

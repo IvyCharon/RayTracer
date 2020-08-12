@@ -449,14 +449,7 @@ impl Box {
             ma.x,
             p.clone(),
         )));
-        wor.add(Arc::new(YZRrect::new(
-            mi.y,
-            ma.y,
-            mi.z,
-            ma.z,
-            mi.x,
-            p,
-        )));
+        wor.add(Arc::new(YZRrect::new(mi.y, ma.y, mi.z, ma.z, mi.x, p)));
 
         Self {
             box_min: mi,
