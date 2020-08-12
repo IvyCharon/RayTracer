@@ -32,7 +32,7 @@ use indicatif::ProgressBar;
 
 const INFINITY: f64 = 1e15;
 
-fn ray_color_(r: Ray, back_ground: Vec3, world: &impl Object, depth: i32) -> Vec3 {
+fn _ray_color_(r: Ray, back_ground: Vec3, world: &impl Object, depth: i32) -> Vec3 {
     let rec = world.hit(r, 0.001, INFINITY);
     if depth <= 0 {
         return Vec3::zero();
@@ -44,7 +44,7 @@ fn ray_color_(r: Ray, back_ground: Vec3, world: &impl Object, depth: i32) -> Vec
             if s.jud {
                 return emitted
                     + Vec3::elemul(
-                        ray_color_(s.scattered, back_ground, world, depth - 1),
+                        _ray_color_(s.scattered, back_ground, world, depth - 1),
                         s.attenustion,
                     );
             }
@@ -112,7 +112,7 @@ fn main() {
 
     let choose = 2;
     let mut world = HittableList::new();
-    let spw: BvhNode;
+    let _spw: BvhNode;
     let lights = XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, NoMaterial);
     let _glass_sphere = Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0, NoMaterial);
     let aspect_ratio: f64;
@@ -128,7 +128,7 @@ fn main() {
     match choose {
         1 => {
             //night
-            spw = HittableList::night();
+            _spw = HittableList::night();
             aspect_ratio = 3.0 / 2.0;
             image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
@@ -152,7 +152,7 @@ fn main() {
         }
         2 => {
             world = HittableList::cornell_box();
-            spw = BvhNode::new(HittableList::new(), 0.001, INFINITY);
+            //spw = BvhNode::new(HittableList::new(), 0.001, INFINITY);
             aspect_ratio = 1.0;
             image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
@@ -176,7 +176,7 @@ fn main() {
         }
         _ => {
             //day
-            spw = HittableList::random_scene();
+            _spw = HittableList::random_scene();
             aspect_ratio = 3.0 / 2.0;
             image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
@@ -209,13 +209,10 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                match choose {
-                    2 => {
-                        col += ray_color(r, background, &lights, &world, max_depth);
-                    }
-                    _ => {
-                        col += ray_color_(r, background, &spw, max_depth);
-                    }
+                if choose == 2 {
+                    col += ray_color(r, background, &lights, &world, max_depth);
+                } else {
+                    //col += ray_color_(r, background, &spw, max_depth);
                 }
                 //col += ray_color(r, background, &lights, &world, max_depth);
             }
