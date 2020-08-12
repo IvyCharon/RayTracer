@@ -96,7 +96,7 @@ impl HittableList {
         self.num += 1;
     }
 
-    pub fn random_scene() -> Arc<BvhNode> {
+    pub fn random_scene() -> BvhNode {
         let mut world = HittableList::new();
 
         let checker = CheckerTexture::new(
@@ -154,10 +154,12 @@ impl HittableList {
 
         let mat3 = Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0);
         world.add(Arc::new(Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, mat3)));
-        Arc::new(BvhNode::new(world, 0.001, INFINITY))
+        
+        //world
+        BvhNode::new(world, 0.001, INFINITY)
     }
 
-    pub fn night() -> Arc<dyn Object> {
+    pub fn night() -> BvhNode {
         let mut world = HittableList::new();
 
         let checker = CheckerTexture::new(
@@ -226,10 +228,11 @@ impl HittableList {
         let ke = Dielectric::new(4.0);
         world.add(Arc::new(Sphere::new(Vec3::new(3.0, 0.45, 0.0), 0.45, ke)));
 
-        Arc::new(BvhNode::new(world, 0.001, INFINITY))
+        //world
+        BvhNode::new(world, 0.001, INFINITY)
     }
 
-    pub fn cornell_box() -> Arc<dyn Object> {
+    pub fn cornell_box() -> HittableList {
         let red = Lambertian::new(SolidColor::new(Vec3::new(0.65, 0.05, 0.05)));
         let white = Lambertian::new(SolidColor::new(Vec3::new(0.73, 0.73, 0.73)));
         let green = Lambertian::new(SolidColor::new(Vec3::new(0.12, 0.45, 0.15)));
@@ -271,7 +274,7 @@ impl HittableList {
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 330.0, 165.0),
             //aluminum,
-            white.clone(),
+            white//.clone(),
         );
         let rot1 = RotateY::new(box1, 15.0);
         let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));
@@ -284,15 +287,16 @@ impl HittableList {
         ));
         world.add(glass_sphere);
 
-        /*let box2 = Arc::new(Box::new(
+        /*let box2 = Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 165.0, 165.0),
             white,
-        ));
-        let rot2 = Arc::new(RotateY::new(box2, -18.0));
+        );
+        let rot2 = RotateY::new(box2, -18.0);
         let ww2 = Arc::new(Translate::new(rot2, Vec3::new(130.0, 0.0, 65.0)));
         world.add(ww2);*/
 
-        Arc::new(world)
+        world
+        //BvhNode::new(world, 0.001, INFINITY)
     }
 }

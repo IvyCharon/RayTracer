@@ -23,15 +23,36 @@ mod onb;
 use onb::Onb;
 mod pdf;
 use pdf::{CosPdf, HittablePdf, MixturePdf, Pdf};
-
+//use std::sync::Arc;
 //extern crate rand;
 //use rand::Rng;
 
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
-use std::sync::Arc;
 
 const INFINITY: f64 = 1e15;
+
+fn ray_color_(r: Ray, back_ground: Vec3, world: &impl Object, depth: i32) -> Vec3 {
+    let rec = world.hit(r, 0.001, INFINITY);
+    if depth <= 0 {
+        return Vec3::zero();
+    }
+    match rec {
+        Option::Some(rec) => {
+            let s = rec.mat.as_ref().unwrap().scatter_(r, &rec);
+            let emitted = rec.mat.unwrap().emitted(&rec, rec.u, rec.v, rec.p);
+            if s.jud {
+                return emitted
+                    + Vec3::elemul(
+                        ray_color_(s.scattered, back_ground, world, depth - 1),
+                        s.attenustion,
+                    );
+            }
+            emitted
+        }
+        Option::None => back_ground,
+    }
+}
 
 fn ray_color<T: Object + Copy>(
     r: Ray,
@@ -57,7 +78,7 @@ fn ray_color<T: Object + Copy>(
                 }
                 let light_ptr = HittablePdf::new(rec.p, *lights);
                 let km = s.pdf_ptr.unwrap();
-                let p = MixturePdf::new(light_ptr, &*km);
+                let p = MixturePdf::new(&light_ptr, &*km);
 
                 let scattered = Ray::new(rec.p, p.generate());
                 let pdf_val = p.value(scattered.dir);
@@ -86,11 +107,12 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 3000;
     let max_depth = 50;
 
     let choose = 2;
-    let world: Arc<dyn Object>;
+    let mut world = HittableList::new();
+    let spw: BvhNode;
     let lights = XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, NoMaterial);
     let _glass_sphere = Sphere::new(Vec3::new(190.0, 90.0, 190.0), 90.0, NoMaterial);
     let aspect_ratio: f64;
@@ -106,9 +128,9 @@ fn main() {
     match choose {
         1 => {
             //night
-            world = HittableList::night();
+            spw = HittableList::night();
             aspect_ratio = 3.0 / 2.0;
-            image_width = 400;
+            image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
@@ -130,8 +152,9 @@ fn main() {
         }
         2 => {
             world = HittableList::cornell_box();
+            spw = BvhNode::new(HittableList::new(), 0.001, INFINITY);
             aspect_ratio = 1.0;
-            image_width = 200;
+            image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
@@ -153,9 +176,9 @@ fn main() {
         }
         _ => {
             //day
-            world = HittableList::random_scene();
+            spw = HittableList::random_scene();
             aspect_ratio = 3.0 / 2.0;
-            image_width = 400;
+            image_width = 1600;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
@@ -178,7 +201,6 @@ fn main() {
     }
     let mut img: RgbImage = ImageBuffer::new(image_width, image_height);
     let bar = ProgressBar::new(image_height as u64);
-
     for j in 0..image_height {
         for i in 0..image_width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
@@ -187,7 +209,15 @@ fn main() {
                 let v = (image_height as f64 - j as f64 + rand::random::<f64>())
                     / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                col += ray_color(r, background, &lights, &world, max_depth);
+                match choose {
+                    2 => {
+                        col += ray_color(r, background, &lights, &world, max_depth);
+                    }
+                    _ => {
+                        col += ray_color_(r, background, &spw, max_depth);
+                    }
+                }
+                //col += ray_color(r, background, &lights, &world, max_depth);
             }
             let pixel = img.get_pixel_mut(i, j);
             if col.x.is_nan() {

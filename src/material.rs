@@ -8,6 +8,7 @@ extern crate rand;
 
 pub trait Material {
     fn scatter(&self, r_in: Ray, rec: &HitRecord) -> ScaRet;
+    fn scatter_(&self, r_in: Ray, rec: &HitRecord) -> ScaRet_;
     fn emitted(&self, _rec: &HitRecord, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         Vec3::zero()
     }
@@ -46,6 +47,22 @@ impl ScaRet {
     }
 }
 
+pub struct ScaRet_ {
+    pub scattered: Ray,
+    pub attenustion: Vec3,
+    pub jud: bool,
+}
+
+impl ScaRet_ {
+    pub fn new(r: Ray, v: Vec3, j: bool) -> Self {
+        Self {
+            scattered: r,
+            attenustion: v,
+            jud: j,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Copy)]
 pub struct NoMaterial;
 
@@ -56,6 +73,10 @@ impl Material for NoMaterial {
 
     fn emitted(&self, _rec: &HitRecord, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         panic!("no material");
+    }
+
+    fn scatter_(&self, _r_in: Ray, _rec: &HitRecord) -> ScaRet_ {
+        panic!("no material!");
     }
 }
 
@@ -88,6 +109,15 @@ impl<T: Texture> Material for Lambertian<T> {
         } else {
             co / std::f64::consts::PI
         }
+    }
+
+    fn scatter_(&self, _r_in: Ray, rec: &HitRecord) -> ScaRet_ {
+        let sca_dir = rec.normal + Vec3::random_unit_vec();
+        ScaRet_::new(
+            Ray::new(rec.p, sca_dir),
+            self.albedo.value(rec.u, rec.v, rec.p),
+            true,
+        )
     }
 }
 
@@ -122,6 +152,13 @@ impl Material for Metal {
             is_specular: true,
             jud: true,
         }
+    }
+
+    fn scatter_(&self, r_in: Ray, rec: &HitRecord) -> ScaRet_ {
+        let reflected = Vec3::reflect(r_in.dir.unit(), rec.normal);
+        let sca = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
+        let at = self.albedo;
+        ScaRet_::new(sca, at, (sca.dir * rec.normal) > 0.0)
     }
 }
 
@@ -171,6 +208,35 @@ impl Material for Dielectric {
         let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
         ScaRet::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true, true)
     }
+
+    fn scatter_(&self, r_in: Ray, rec: &HitRecord) -> ScaRet_ {
+        let eta: f64 = {
+            if rec.front_face {
+                1.0 / self.ref_idx
+            } else {
+                self.ref_idx
+            }
+        };
+        let cos_theta = {
+            if -r_in.dir.unit() * rec.normal > 1.0 {
+                1.0
+            } else {
+                -r_in.dir.unit() * rec.normal
+            }
+        };
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        if eta * sin_theta > 1.0 {
+            let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
+            return ScaRet_::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+        }
+        let rp = Dielectric::schlick(cos_theta, eta);
+        if rand::random::<f64>() < rp {
+            let refl = Vec3::reflect(r_in.dir.unit(), rec.normal);
+            return ScaRet_::new(Ray::new(rec.p, refl), Vec3::new(1.0, 1.0, 1.0), true);
+        }
+        let refr = Vec3::refract(r_in.dir.unit(), rec.normal, eta);
+        ScaRet_::new(Ray::new(rec.p, refr), Vec3::new(1.0, 1.0, 1.0), true)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -195,11 +261,15 @@ impl<T: Texture> Material for DiffuseLight<T> {
         }
     }
 
-    fn emitted(&self, rec: &HitRecord, u: f64, v: f64, p: Vec3) -> Vec3 {
-        if rec.front_face {
-            self.emit.value(u, v, p)
-        } else {
-            Vec3::zero()
+    fn emitted(&self, _rec: &HitRecord, u: f64, v: f64, p: Vec3) -> Vec3 {
+        self.emit.value(u, v, p)
+    }
+
+    fn scatter_(&self, _r_in: Ray, _rec: &HitRecord) -> ScaRet_ {
+        ScaRet_ {
+            scattered: Ray::new(Vec3::zero(), Vec3::zero()),
+            attenustion: Vec3::zero(),
+            jud: false,
         }
     }
 }

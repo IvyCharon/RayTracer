@@ -414,7 +414,7 @@ impl Box {
             ma.x,
             mi.y,
             ma.y,
-            mi.z,
+            ma.z,
             p.clone(),
         )));
         wor.add(Arc::new(XYRect::new(
@@ -422,15 +422,7 @@ impl Box {
             ma.x,
             mi.y,
             ma.y,
-            ma.z,
-            p.clone(),
-        )));
-        wor.add(Arc::new(XZRect::new(
-            mi.x,
-            ma.x,
             mi.z,
-            ma.z,
-            mi.y,
             p.clone(),
         )));
         wor.add(Arc::new(XZRect::new(
@@ -441,12 +433,12 @@ impl Box {
             ma.y,
             p.clone(),
         )));
-        wor.add(Arc::new(YZRrect::new(
-            mi.y,
-            ma.y,
+        wor.add(Arc::new(XZRect::new(
+            mi.x,
+            ma.x,
             mi.z,
             ma.z,
-            mi.x,
+            mi.y,
             p.clone(),
         )));
         wor.add(Arc::new(YZRrect::new(
@@ -456,6 +448,14 @@ impl Box {
             ma.z,
             ma.x,
             p.clone(),
+        )));
+        wor.add(Arc::new(YZRrect::new(
+            mi.y,
+            ma.y,
+            mi.z,
+            ma.z,
+            mi.x,
+            p,
         )));
 
         Self {

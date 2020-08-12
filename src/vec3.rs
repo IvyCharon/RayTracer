@@ -257,7 +257,7 @@ impl Vec3 {
         }
     }
 
-    pub fn _random_unit_vec() -> Vec3 {
+    pub fn random_unit_vec() -> Vec3 {
         let mut rng = rand::thread_rng();
         let a = rng.gen_range(0.0, 2.0 * std::f64::consts::PI);
         let z = rng.gen_range(-1.0, 1.0);

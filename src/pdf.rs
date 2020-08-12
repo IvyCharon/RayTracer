@@ -55,18 +55,18 @@ impl<T: Object> Pdf for HittablePdf<T> {
     }
 }
 
-pub struct MixturePdf<'a, T: Pdf> {
-    p0: T,
+pub struct MixturePdf<'a> {
+    p0: &'a dyn Pdf,
     p1: &'a dyn Pdf,
 }
 
-impl<'a, T: Pdf> MixturePdf<'a, T> {
-    pub fn new(pp0: T, pp1: &'a dyn Pdf) -> Self {
+impl<'a> MixturePdf<'a> {
+    pub fn new(pp0: &'a dyn Pdf, pp1: &'a dyn Pdf) -> Self {
         Self { p0: pp0, p1: pp1 }
     }
 }
 
-impl<'a, T: Pdf> Pdf for MixturePdf<'a, T> {
+impl<'a> Pdf for MixturePdf<'a> {
     fn value(&self, dir: Vec3) -> f64 {
         0.5 * self.p0.value(dir) + 0.5 * self.p1.value(dir)
     }
