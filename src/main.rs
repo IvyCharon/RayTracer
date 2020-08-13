@@ -107,7 +107,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 }
 
 fn main() {
-    let samples_per_pixel = 3000;
+    let samples_per_pixel = 1000;
     let max_depth = 50;
 
     let choose = 2;
@@ -152,9 +152,9 @@ fn main() {
         }
         2 => {
             world = HittableList::cornell_box();
-            //spw = BvhNode::new(HittableList::new(), 0.001, INFINITY);
+            //_spw = BvhNode::new(HittableList::new(), 0.001, INFINITY);
             aspect_ratio = 1.0;
-            image_width = 1600;
+            image_width = 200;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(278.0, 278.0, -800.0);
@@ -178,7 +178,7 @@ fn main() {
             //day
             _spw = HittableList::random_scene();
             aspect_ratio = 3.0 / 2.0;
-            image_width = 1600;
+            image_width = 200;
             image_height = ((image_width as f64) / aspect_ratio) as u32;
 
             lookfrom = Vec3::new(13.0, 2.0, 3.0);
@@ -212,7 +212,7 @@ fn main() {
                 if choose == 2 {
                     col += ray_color(r, background, &lights, &world, max_depth);
                 } else {
-                    //col += ray_color_(r, background, &spw, max_depth);
+                    //col += _ray_color_(r, background, &_spw, max_depth);
                 }
                 //col += ray_color(r, background, &lights, &world, max_depth);
             }

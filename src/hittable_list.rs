@@ -109,28 +109,21 @@ impl HittableList {
             Lambertian::new(checker),
         )));
 
-        for a in -6..6 {
-            for b in -6..6 {
+        for a in -11..11 {
+            for b in -11..11 {
                 let choose_mat = rand::random::<f64>();
                 let center = Vec3::new(
                     a as f64 + 0.9 * rand::random::<f64>(),
                     0.2,
                     b as f64 + 0.9 * rand::random::<f64>(),
                 );
-
                 if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                    if choose_mat < 0.6 {
-                        let dl = DiffuseLight::new(SolidColor::new(Vec3::elemul(
-                            Vec3::random1(),
-                            Vec3::random1(),
-                        )));
-                        world.add(Arc::new(Sphere::new(center, 0.2, dl)));
-                    } else if choose_mat < 0.7 {
+                    if choose_mat < 0.8 {
                         //difuse
                         let albedo = Vec3::elemul(Vec3::random1(), Vec3::random1());
                         let sphere_mat = Lambertian::new(SolidColor::new(albedo));
-                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_mat)));
-                    } else if choose_mat < 0.85 {
+                        world.add(Arc::new(Sphere::new(center,0.2, sphere_mat)));
+                    } else if choose_mat < 0.95 {
                         //metal
                         let albedo = Vec3::random2(0.5, 1.0);
                         let mut rng = rand::thread_rng();
@@ -269,32 +262,32 @@ impl HittableList {
             white.clone(),
         )));
 
-        //let aluminum = Arc::new(Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0));
+        let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.0);
         let box1 = Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 330.0, 165.0),
-            //aluminum,
-            white,
+            aluminum,
+            //white,
         );
         let rot1 = RotateY::new(box1, 15.0);
         let ww1 = Arc::new(Translate::new(rot1, Vec3::new(265.0, 0.0, 295.0)));
         world.add(ww1);
 
-        let glass_sphere = Arc::new(Sphere::new(
+        /*let glass_sphere = Arc::new(Sphere::new(
             Vec3::new(190.0, 90.0, 190.0),
             90.0,
             Dielectric::new(1.5),
         ));
-        world.add(glass_sphere);
+        world.add(glass_sphere);*/
 
-        /*let box2 = Box::new(
+        let box2 = Box::new(
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(165.0, 165.0, 165.0),
             white,
         );
         let rot2 = RotateY::new(box2, -18.0);
         let ww2 = Arc::new(Translate::new(rot2, Vec3::new(130.0, 0.0, 65.0)));
-        world.add(ww2);*/
+        world.add(ww2);
 
         world
         //BvhNode::new(world, 0.001, INFINITY)
