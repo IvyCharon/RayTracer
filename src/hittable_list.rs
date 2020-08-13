@@ -122,7 +122,7 @@ impl HittableList {
                         //difuse
                         let albedo = Vec3::elemul(Vec3::random1(), Vec3::random1());
                         let sphere_mat = Lambertian::new(SolidColor::new(albedo));
-                        world.add(Arc::new(Sphere::new(center,0.2, sphere_mat)));
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_mat)));
                     } else if choose_mat < 0.95 {
                         //metal
                         let albedo = Vec3::random2(0.5, 1.0);

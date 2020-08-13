@@ -5,20 +5,20 @@
 
 + rust reference: [The Rust Programming Language](https://doc.rust-lang.org/book/title-page.html)
 
-### in one weekend
+### In One Weekend
 + reference: [In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
 + 成果: [one weekend](https://github.com/IvyCharon/RayTracer/actions/runs/184188719)
 
 
-### the next week
+### The Next Week
 + reference: [The Next Week](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
 
 + 成果: 
   - [checkered ground](https://github.com/IvyCharon/RayTracer/actions/runs/185428288)
   - [夜景](https://github.com/IvyCharon/RayTracer/actions/runs/190119390)
 
-### rest of your life
+### The Rest of Your Life
 + reference: [The Rest of Your Life](https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html)
 
 + 成果: 
